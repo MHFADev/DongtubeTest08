@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Tools - Comprehensive Developer Toolkit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #FFA500;
+      --primary-light: #FFB733;
+      --secondary: #FFD700;
+      --bg-dark: #0D0D0D;
+      --bg-darker: #080808;
+      --bg-card: #1A1A1A;
+      --text: #FFFFFF;
+      --text-muted: #888888;
+      --border: #2A2A2A;
+      --success: #00FF88;
+      --error: #FF4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Header with Hamburger Menu */
+    .header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Hamburger Menu Button */
+    .hamburger {
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+    }
+
+    .hamburger:hover {
+      border-color: var(--primary);
+      background: rgba(255, 165, 0, 0.1);
+    }
+
+    .hamburger span {
+      width: 20px;
+      height: 2px;
+      background: var(--text);
+      transition: all 0.3s ease;
+    }
+
+    .hamburger.active span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(5px, -5px);
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      position: fixed;
+      left: -300px;
+      top: 73px;
+      width: 280px;
+      height: calc(100vh - 73px);
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      z-index: 999;
+      padding: 24px 0;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 73px;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 73px);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 998;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .nav-section {
+      padding: 0 16px;
+      margin-bottom: 24px;
+    }
+
+    .nav-section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      padding: 0 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 4px;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 165, 0, 0.1);
+      color: var(--text);
+    }
+
+    .nav-item.active {
+      background: rgba(255, 165, 0, 0.15);
+      color: var(--primary);
+      border-left: 3px solid var(--primary);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      min-width: 20px;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 32px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tool-container {
+      display: none;
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    .tool-container.active {
+      display: block;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .tool-header {
+      margin-bottom: 32px;
+    }
+
+    .tool-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tool-description {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 32px rgba(255, 165, 0, 0.2);
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: var(--bg-card);
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--bg-dark);
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 165, 0, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card);
+      border-color: var(--primary);
+    }
+
+    .result-box {
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .result-preview {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .qr-code-preview {
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
+    }
+
+    .color-preview {
+      width: 100%;
+      height: 100px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 2px solid var(--border);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 300px;
+      max-width: 400px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      z-index: 10000;
+      animation: slideInRight 0.3s ease-out;
+      display: none;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .toast.error {
+      border-left: 4px solid var(--error);
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .stat-item {
+      background: var(--bg-darker);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 24px 16px;
+      }
+
+      .tool-title {
+        font-size: 24px;
+      }
+
+      .sidebar {
+        width: 100%;
+        left: -100%;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+    }
+
+    /* Accessibility */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* Range Slider */
+    .range-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .range-input {
+      flex: 1;
+      height: 8px;
+      background: var(--bg-darker);
+      border-radius: 4px;
+      outline: none;
+      accent-color: var(--primary);
+    }
+
+    .range-value {
+      min-width: 50px;
+      padding: 8px 12px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .button-group .btn {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header" role="banner">
+    <a href="/" class="logo" aria-label="Home">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">Admin Tools</span>
+    </a>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" aria-hidden="true"></div>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="nav-section">
+      <div class="nav-section-title">Generators</div>
+      <div class="nav-item active" data-tool="qr-code" role="button" tabindex="0" aria-label="QR Code Generator">
+        <span class="nav-icon">📱</span>
+        <span>QR Code Generator</span>
+      </div>
+      <div class="nav-item" data-tool="password" role="button" tabindex="0" aria-label="Password Generator">
+        <span class="nav-icon">🔐</span>
+        <span>Password Generator</span>
+      </div>
+      <div class="nav-item" data-tool="uuid" role="button" tabindex="0" aria-label="UUID Generator">
+        <span class="nav-icon">🆔</span>
+        <span>UUID Generator</span>
+      </div>
+      <div class="nav-item" data-tool="lorem-ipsum" role="button" tabindex="0" aria-label="Lorem Ipsum Generator">
+        <span class="nav-icon">📝</span>
+        <span>Lorem Ipsum</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Converters</div>
+      <div class="nav-item" data-tool="hash" role="button" tabindex="0" aria-label="Hash Generator">
+        <span class="nav-icon">🔒</span>
+        <span>Hash Generator</span>
+      </div>
+      <div class="nav-item" data-tool="base64" role="button" tabindex="0" aria-label="Base64 Encoder/Decoder">
+        <span class="nav-icon">🔄</span>
+        <span>Base64 Encode/Decode</span>
+      </div>
+      <div class="nav-item" data-tool="url-encode" role="button" tabindex="0" aria-label="URL Encoder/Decoder">
+        <span class="nav-icon">🌐</span>
+        <span>URL Encode/Decode</span>
+      </div>
+      <div class="nav-item" data-tool="color-convert" role="button" tabindex="0" aria-label="Color Converter">
+        <span class="nav-icon">🎨</span>
+        <span>Color Converter</span>
+      </div>
+      <div class="nav-item" data-tool="timestamp" role="button" tabindex="0" aria-label="Timestamp Converter">
+        <span class="nav-icon">⏰</span>
+        <span>Timestamp Converter</span>
+      </div>
+      <div class="nav-item" data-tool="text-case" role="button" tabindex="0" aria-label="Text Case Converter">
+        <span class="nav-icon">🔤</span>
+        <span>Text Case Converter</span>
+      </div>
+      <div class="nav-item" data-tool="html-entity" role="button" tabindex="0" aria-label="HTML Entity Encoder/Decoder">
+        <span class="nav-icon">📄</span>
+        <span>HTML Entity Encode/Decode</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Utilities</div>
+      <div class="nav-item" data-tool="json-format" role="button" tabindex="0" aria-label="JSON Formatter">
+        <span class="nav-icon">{ }</span>
+        <span>JSON Formatter</span>
+      </div>
+      <div class="nav-item" data-tool="jwt-decode" role="button" tabindex="0" aria-label="JWT Decoder">
+        <span class="nav-icon">🎫</span>
+        <span>JWT Decoder</span>
+      </div>
+      <div class="nav-item" data-tool="csv-json" role="button" tabindex="0" aria-label="CSV to JSON Converter">
+        <span class="nav-icon">📊</span>
+        <span>CSV to JSON</span>
+      </div>
+      <div class="nav-item" data-tool="text-stats" role="button" tabindex="0" aria-label="Text Statistics">
+        <span class="nav-icon">📈</span>
+        <span>Text Statistics</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" role="main">
+    <!-- QR Code Generator -->
+    <div class="tool-container active" id="tool-qr-code">
+      <div class="tool-header">
+        <h1 class="tool-title">QR Code Generator</h1>
+        <p class="tool-description">Create customizable QR codes instantly for URLs, text, or any data</p>
+      </div>
+      
+      <div class="tool-grid">
+        <div class="card">
+          <h2 class="card-title">📱 Configure QR Code</h2>
+          <form id="qr-form">
+            <div class="form-group">
+              <label class="form-label" for="qr-text">Text or URL</label>
+              <textarea class="form-textarea" id="qr-text" placeholder="Enter text or URL" required></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="qr-size">Size (px)</label>
+              <div class="range-container">
+                <input type="range" class="range-input" id="qr-size" min="100" max="600" value="300" step="50">
+                <span class="range-value" id="qr-size-value">300</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="qr-color">Foreground Color</label>
+              <input type="color" class="form-input" id="qr-color" value="#000000">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="qr-bg-color">Background Color</label>
+              <input type="color" class="form-input" id="qr-bg-color" value="#FFFFFF">
+            </div>
+            <button type="submit" class="btn btn-primary">Generate QR Code</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">🖼️ Preview</h2>
+          <div class="result-preview" id="qr-preview">
+            <p style="color: var(--text-muted);">Your QR code will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Generator -->
+    <div class="tool-container" id="tool-password">
+      <div class="tool-header">
+        <h1 class="tool-title">Password Generator</h1>
+        <p class="tool-description">Generate secure random passwords with customizable options</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🔐 Configure Password</h2>
+        <form id="password-form">
+          <div class="form-group">
+            <label class="form-label" for="password-length">Password Length</label>
+            <div class="range-container">
+              <input type="range" class="range-input" id="password-length" min="8" max="64" value="16" step="1">
+              <span class="range-value" id="password-length-value">16</span>
+            </div>
+          </div>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" class="checkbox" id="password-uppercase" checked>
+              <span>Uppercase (A-Z)</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="checkbox" id="password-lowercase" checked>
+              <span>Lowercase (a-z)</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="checkbox" id="password-numbers" checked>
+              <span>Numbers (0-9)</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" class="checkbox" id="password-symbols" checked>
+              <span>Symbols (!@#$%)</span>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">Generate Password</button>
+        </form>
+        <div id="password-result" style="display: none;">
+          <div class="result-box" id="password-display"></div>
+          <div class="button-group">
+            <button class="btn btn-secondary" onclick="copyToClipboard('password-display')">📋 Copy</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('password-form').dispatchEvent(new Event('submit'))">🔄 Generate New</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UUID Generator -->
+    <div class="tool-container" id="tool-uuid">
+      <div class="tool-header">
+        <h1 class="tool-title">UUID Generator</h1>
+        <p class="tool-description">Generate unique identifiers (UUIDs) for your applications</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🆔 Generate UUIDs</h2>
+        <form id="uuid-form">
+          <div class="form-group">
+            <label class="form-label" for="uuid-count">Number of UUIDs</label>
+            <input type="number" class="form-input" id="uuid-count" value="1" min="1" max="100">
+          </div>
+          <button type="submit" class="btn btn-primary">Generate UUIDs</button>
+        </form>
+        <div id="uuid-result" style="display: none;">
+          <div class="result-box" id="uuid-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('uuid-display')" style="margin-top: 12px;">📋 Copy All</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lorem Ipsum Generator -->
+    <div class="tool-container" id="tool-lorem-ipsum">
+      <div class="tool-header">
+        <h1 class="tool-title">Lorem Ipsum Generator</h1>
+        <p class="tool-description">Generate placeholder text for your designs and mockups</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">📝 Configure Lorem Ipsum</h2>
+        <form id="lorem-form">
+          <div class="form-group">
+            <label class="form-label" for="lorem-paragraphs">Number of Paragraphs</label>
+            <input type="number" class="form-input" id="lorem-paragraphs" value="3" min="1" max="20">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lorem-words">Words per Paragraph</label>
+            <input type="number" class="form-input" id="lorem-words" value="50" min="10" max="200">
+          </div>
+          <button type="submit" class="btn btn-primary">Generate Text</button>
+        </form>
+        <div id="lorem-result" style="display: none;">
+          <div class="result-box" id="lorem-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('lorem-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hash Generator -->
+    <div class="tool-container" id="tool-hash">
+      <div class="tool-header">
+        <h1 class="tool-title">Hash Generator</h1>
+        <p class="tool-description">Generate cryptographic hashes using various algorithms</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🔒 Generate Hash</h2>
+        <form id="hash-form">
+          <div class="form-group">
+            <label class="form-label" for="hash-text">Text to Hash</label>
+            <textarea class="form-textarea" id="hash-text" placeholder="Enter text" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="hash-algorithm">Algorithm</label>
+            <select class="form-select" id="hash-algorithm">
+              <option value="md5">MD5</option>
+              <option value="sha1">SHA1</option>
+              <option value="sha256" selected>SHA256</option>
+              <option value="sha512">SHA512</option>
+              <option value="sha3">SHA3</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Generate Hash</button>
+        </form>
+        <div id="hash-result" style="display: none;">
+          <div class="result-box" id="hash-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('hash-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Base64 Encoder/Decoder -->
+    <div class="tool-container" id="tool-base64">
+      <div class="tool-header">
+        <h1 class="tool-title">Base64 Encoder/Decoder</h1>
+        <p class="tool-description">Encode or decode text to/from Base64 format</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🔄 Base64 Tool</h2>
+        <form id="base64-form">
+          <div class="form-group">
+            <label class="form-label" for="base64-text">Input Text</label>
+            <textarea class="form-textarea" id="base64-text" placeholder="Enter text" required></textarea>
+          </div>
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="processBase64('encode')">Encode</button>
+            <button type="button" class="btn btn-secondary" onclick="processBase64('decode')">Decode</button>
+          </div>
+        </form>
+        <div id="base64-result" style="display: none;">
+          <div class="result-box" id="base64-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('base64-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL Encoder/Decoder -->
+    <div class="tool-container" id="tool-url-encode">
+      <div class="tool-header">
+        <h1 class="tool-title">URL Encoder/Decoder</h1>
+        <p class="tool-description">Encode or decode URLs for safe transmission</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🌐 URL Tool</h2>
+        <form id="url-form">
+          <div class="form-group">
+            <label class="form-label" for="url-text">Input Text</label>
+            <textarea class="form-textarea" id="url-text" placeholder="Enter URL or text" required></textarea>
+          </div>
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="processURL('encode')">Encode</button>
+            <button type="button" class="btn btn-secondary" onclick="processURL('decode')">Decode</button>
+          </div>
+        </form>
+        <div id="url-result" style="display: none;">
+          <div class="result-box" id="url-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('url-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color Converter -->
+    <div class="tool-container" id="tool-color-convert">
+      <div class="tool-header">
+        <h1 class="tool-title">Color Converter</h1>
+        <p class="tool-description">Convert colors between HEX, RGB, and HSL formats</p>
+      </div>
+      
+      <div class="tool-grid">
+        <div class="card">
+          <h2 class="card-title">🎨 Select Color</h2>
+          <form id="color-form">
+            <div class="form-group">
+              <label class="form-label" for="color-input">Pick a Color</label>
+              <input type="color" class="form-input" id="color-input" value="#FFA500">
+            </div>
+            <button type="submit" class="btn btn-primary">Convert Color</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">🎨 Color Preview & Formats</h2>
+          <div id="color-result">
+            <div class="color-preview" id="color-preview" style="background: #FFA500;"></div>
+            <div class="result-box" id="color-display">
+              HEX: #FFA500<br>
+              RGB: rgb(255, 165, 0)<br>
+              HSL: hsl(39, 100%, 50%)
+            </div>
+            <button class="btn btn-secondary" onclick="copyToClipboard('color-display')" style="margin-top: 12px;">📋 Copy All</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timestamp Converter -->
+    <div class="tool-container" id="tool-timestamp">
+      <div class="tool-header">
+        <h1 class="tool-title">Timestamp Converter</h1>
+        <p class="tool-description">Convert between Unix timestamps and readable dates</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">⏰ Timestamp Tool</h2>
+        <form id="timestamp-form">
+          <div class="form-group">
+            <label class="form-label" for="timestamp-input">Timestamp or Date</label>
+            <input type="text" class="form-input" id="timestamp-input" placeholder="1234567890 or 2024-01-01">
+          </div>
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="convertTimestamp('toDate')">To Date</button>
+            <button type="button" class="btn btn-secondary" onclick="convertTimestamp('toTimestamp')">To Timestamp</button>
+          </div>
+        </form>
+        <div id="timestamp-result" style="display: none;">
+          <div class="result-box" id="timestamp-display"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text Case Converter -->
+    <div class="tool-container" id="tool-text-case">
+      <div class="tool-header">
+        <h1 class="tool-title">Text Case Converter</h1>
+        <p class="tool-description">Convert text between different case formats</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🔤 Convert Text Case</h2>
+        <form id="text-case-form">
+          <div class="form-group">
+            <label class="form-label" for="text-case-input">Input Text</label>
+            <textarea class="form-textarea" id="text-case-input" placeholder="Enter text" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="case-type">Case Type</label>
+            <select class="form-select" id="case-type">
+              <option value="upper">UPPERCASE</option>
+              <option value="lower">lowercase</option>
+              <option value="title">Title Case</option>
+              <option value="sentence">Sentence case</option>
+              <option value="camel">camelCase</option>
+              <option value="snake">snake_case</option>
+              <option value="kebab">kebab-case</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Convert</button>
+        </form>
+        <div id="text-case-result" style="display: none;">
+          <div class="result-box" id="text-case-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('text-case-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HTML Entity Encoder/Decoder -->
+    <div class="tool-container" id="tool-html-entity">
+      <div class="tool-header">
+        <h1 class="tool-title">HTML Entity Encoder/Decoder</h1>
+        <p class="tool-description">Encode or decode HTML entities for safe display</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">📄 HTML Entity Tool</h2>
+        <form id="html-entity-form">
+          <div class="form-group">
+            <label class="form-label" for="html-entity-text">Input Text</label>
+            <textarea class="form-textarea" id="html-entity-text" placeholder="Enter text or HTML" required></textarea>
+          </div>
+          <div class="button-group">
+            <button type="button" class="btn btn-primary" onclick="processHTMLEntity('encode')">Encode</button>
+            <button type="button" class="btn btn-secondary" onclick="processHTMLEntity('decode')">Decode</button>
+          </div>
+        </form>
+        <div id="html-entity-result" style="display: none;">
+          <div class="result-box" id="html-entity-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('html-entity-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON Formatter -->
+    <div class="tool-container" id="tool-json-format">
+      <div class="tool-header">
+        <h1 class="tool-title">JSON Formatter & Validator</h1>
+        <p class="tool-description">Format and validate JSON data with syntax highlighting</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">{ } JSON Tool</h2>
+        <form id="json-form">
+          <div class="form-group">
+            <label class="form-label" for="json-input">JSON Input</label>
+            <textarea class="form-textarea" id="json-input" placeholder='{"key": "value"}' required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="json-indent">Indentation</label>
+            <select class="form-select" id="json-indent">
+              <option value="2" selected>2 spaces</option>
+              <option value="4">4 spaces</option>
+              <option value="0">Minified</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Format JSON</button>
+        </form>
+        <div id="json-result" style="display: none;">
+          <div class="result-box" id="json-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('json-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- JWT Decoder -->
+    <div class="tool-container" id="tool-jwt-decode">
+      <div class="tool-header">
+        <h1 class="tool-title">JWT Decoder</h1>
+        <p class="tool-description">Decode and inspect JSON Web Tokens</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">🎫 Decode JWT</h2>
+        <form id="jwt-form">
+          <div class="form-group">
+            <label class="form-label" for="jwt-input">JWT Token</label>
+            <textarea class="form-textarea" id="jwt-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Decode Token</button>
+        </form>
+        <div id="jwt-result" style="display: none;">
+          <h3 style="margin-top: 20px; margin-bottom: 12px;">Header</h3>
+          <div class="result-box" id="jwt-header"></div>
+          <h3 style="margin-top: 20px; margin-bottom: 12px;">Payload</h3>
+          <div class="result-box" id="jwt-payload"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSV to JSON -->
+    <div class="tool-container" id="tool-csv-json">
+      <div class="tool-header">
+        <h1 class="tool-title">CSV to JSON Converter</h1>
+        <p class="tool-description">Convert CSV data to JSON format</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">📊 Convert CSV</h2>
+        <form id="csv-form">
+          <div class="form-group">
+            <label class="form-label" for="csv-input">CSV Input</label>
+            <textarea class="form-textarea" id="csv-input" placeholder="name,email,age&#10;John,john@example.com,30" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Convert to JSON</button>
+        </form>
+        <div id="csv-result" style="display: none;">
+          <div class="result-box" id="csv-display"></div>
+          <button class="btn btn-secondary" onclick="copyToClipboard('csv-display')" style="margin-top: 12px;">📋 Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text Statistics -->
+    <div class="tool-container" id="tool-text-stats">
+      <div class="tool-header">
+        <h1 class="tool-title">Text Statistics</h1>
+        <p class="tool-description">Analyze text with detailed statistics and metrics</p>
+      </div>
+      
+      <div class="card">
+        <h2 class="card-title">📈 Analyze Text</h2>
+        <form id="text-stats-form">
+          <div class="form-group">
+            <label class="form-label" for="text-stats-input">Input Text</label>
+            <textarea class="form-textarea" id="text-stats-input" placeholder="Enter text to analyze" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Analyze</button>
+        </form>
+        <div id="text-stats-result" style="display: none;">
+          <div class="stats-grid" id="text-stats-display"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <script>
+    // Hamburger Menu Toggle
+    const hamburger = document.getElementById('hamburgerBtn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    function toggleSidebar() {
+      hamburger.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+      const isExpanded = hamburger.classList.contains('active');
+      hamburger.setAttribute('aria-expanded', isExpanded);
+      sidebarOverlay.setAttribute('aria-hidden', !isExpanded);
+    }
+
+    hamburger.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // Navigation
+    const navItems = document.querySelectorAll('.nav-item');
+    const toolContainers = document.querySelectorAll('.tool-container');
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const toolId = item.getAttribute('data-tool');
+        
+        navItems.forEach(nav => nav.classList.remove('active'));
+        item.classList.add('active');
+        
+        toolContainers.forEach(tool => tool.classList.remove('active'));
+        document.getElementById(`tool-${toolId}`).classList.add('active');
+        
+        if (window.innerWidth <= 768) {
+          toggleSidebar();
+        }
+      });
+
+      // Keyboard support
+      item.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
+        }
+      });
+    });
+
+    // Toast Notification
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Copy to Clipboard
+    function copyToClipboard(elementId) {
+      const element = document.getElementById(elementId);
+      const text = element.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ Copied to clipboard!', 'success');
+      }).catch(() => {
+        showToast('❌ Failed to copy', 'error');
+      });
+    }
+
+    // QR Code Generator
+    const qrForm = document.getElementById('qr-form');
+    const qrSizeInput = document.getElementById('qr-size');
+    const qrSizeValue = document.getElementById('qr-size-value');
+
+    qrSizeInput.addEventListener('input', () => {
+      qrSizeValue.textContent = qrSizeInput.value;
+    });
+
+    qrForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('qr-text').value;
+      const size = document.getElementById('qr-size').value;
+      const color = document.getElementById('qr-color').value;
+      const bgColor = document.getElementById('qr-bg-color').value;
+
+      try {
+        const response = await fetch('/api/tools/qr-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, size, color, bgColor })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('qr-preview').innerHTML = `
+            <img src="${data.data.qrCode}" alt="Generated QR Code" class="qr-code-preview">
+            <button class="btn btn-secondary" style="margin-top: 16px;" onclick="downloadQRCode('${data.data.qrCode}')">💾 Download</button>
+          `;
+          showToast('✅ QR Code generated!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to generate QR code', 'error');
+      }
+    });
+
+    function downloadQRCode(dataURL) {
+      const link = document.createElement('a');
+      link.href = dataURL;
+      link.download = 'qrcode.png';
+      link.click();
+    }
+
+    // Password Generator
+    const passwordForm = document.getElementById('password-form');
+    const passwordLengthInput = document.getElementById('password-length');
+    const passwordLengthValue = document.getElementById('password-length-value');
+
+    passwordLengthInput.addEventListener('input', () => {
+      passwordLengthValue.textContent = passwordLengthInput.value;
+    });
+
+    passwordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const length = document.getElementById('password-length').value;
+      const includeUppercase = document.getElementById('password-uppercase').checked;
+      const includeLowercase = document.getElementById('password-lowercase').checked;
+      const includeNumbers = document.getElementById('password-numbers').checked;
+      const includeSymbols = document.getElementById('password-symbols').checked;
+
+      try {
+        const response = await fetch('/api/tools/password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ length, includeUppercase, includeLowercase, includeNumbers, includeSymbols })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('password-display').innerHTML = `
+            <strong>Password:</strong> ${data.data.password}<br><br>
+            <strong>Length:</strong> ${data.data.length}<br>
+            <strong>Strength:</strong> ${data.data.strength}
+          `;
+          document.getElementById('password-result').style.display = 'block';
+          showToast('✅ Password generated!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to generate password', 'error');
+      }
+    });
+
+    // UUID Generator
+    document.getElementById('uuid-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const count = document.getElementById('uuid-count').value;
+
+      try {
+        const response = await fetch('/api/tools/uuid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ count })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('uuid-display').textContent = data.data.uuids.join('\n');
+          document.getElementById('uuid-result').style.display = 'block';
+          showToast('✅ UUIDs generated!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to generate UUIDs', 'error');
+      }
+    });
+
+    // Lorem Ipsum Generator
+    document.getElementById('lorem-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const paragraphs = document.getElementById('lorem-paragraphs').value;
+      const wordsPerParagraph = document.getElementById('lorem-words').value;
+
+      try {
+        const response = await fetch('/api/tools/lorem-ipsum', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paragraphs, wordsPerParagraph })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('lorem-display').textContent = data.data.text;
+          document.getElementById('lorem-result').style.display = 'block';
+          showToast('✅ Lorem Ipsum generated!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to generate lorem ipsum', 'error');
+      }
+    });
+
+    // Hash Generator
+    document.getElementById('hash-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('hash-text').value;
+      const algorithm = document.getElementById('hash-algorithm').value;
+
+      try {
+        const response = await fetch('/api/tools/hash', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, algorithm })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('hash-display').textContent = data.data.hash;
+          document.getElementById('hash-result').style.display = 'block';
+          showToast('✅ Hash generated!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to generate hash', 'error');
+      }
+    });
+
+    // Base64 Encoder/Decoder
+    async function processBase64(action) {
+      const text = document.getElementById('base64-text').value;
+
+      try {
+        const response = await fetch('/api/tools/base64', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, action })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('base64-display').textContent = data.data.result;
+          document.getElementById('base64-result').style.display = 'block';
+          showToast(`✅ Text ${action}d!`, 'success');
+        }
+      } catch (error) {
+        showToast(`❌ Failed to ${action}`, 'error');
+      }
+    }
+
+    // URL Encoder/Decoder
+    async function processURL(action) {
+      const text = document.getElementById('url-text').value;
+
+      try {
+        const response = await fetch('/api/tools/url-encode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, action })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('url-display').textContent = data.data.result;
+          document.getElementById('url-result').style.display = 'block';
+          showToast(`✅ URL ${action}d!`, 'success');
+        }
+      } catch (error) {
+        showToast(`❌ Failed to ${action}`, 'error');
+      }
+    }
+
+    // Color Converter
+    document.getElementById('color-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const color = document.getElementById('color-input').value;
+
+      try {
+        const response = await fetch('/api/tools/color-convert', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ color })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('color-preview').style.background = color;
+          document.getElementById('color-display').innerHTML = `
+            <strong>HEX:</strong> ${data.data.hex}<br>
+            <strong>RGB:</strong> ${data.data.rgb}<br>
+            <strong>RGBA:</strong> ${data.data.rgba}<br>
+            <strong>HSL:</strong> ${data.data.hsl}
+          `;
+          showToast('✅ Color converted!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to convert color', 'error');
+      }
+    });
+
+    // Timestamp Converter
+    async function convertTimestamp(action) {
+      const timestamp = document.getElementById('timestamp-input').value || Date.now();
+
+      try {
+        const response = await fetch('/api/tools/timestamp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ timestamp, action })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          if (action === 'toDate') {
+            document.getElementById('timestamp-display').innerHTML = `
+              <strong>ISO:</strong> ${data.data.iso}<br>
+              <strong>UTC:</strong> ${data.data.utc}<br>
+              <strong>Local:</strong> ${data.data.local}<br>
+              <strong>Timestamp:</strong> ${data.data.timestamp}
+            `;
+          } else {
+            document.getElementById('timestamp-display').innerHTML = `
+              <strong>Timestamp:</strong> ${data.data.timestamp}<br>
+              <strong>ISO:</strong> ${data.data.iso}
+            `;
+          }
+          document.getElementById('timestamp-result').style.display = 'block';
+          showToast('✅ Timestamp converted!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to convert timestamp', 'error');
+      }
+    }
+
+    // Text Case Converter
+    document.getElementById('text-case-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('text-case-input').value;
+      const caseType = document.getElementById('case-type').value;
+
+      try {
+        const response = await fetch('/api/tools/text-case', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, caseType })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('text-case-display').textContent = data.data.result;
+          document.getElementById('text-case-result').style.display = 'block';
+          showToast('✅ Text converted!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to convert text', 'error');
+      }
+    });
+
+    // HTML Entity Encoder/Decoder
+    async function processHTMLEntity(action) {
+      const text = document.getElementById('html-entity-text').value;
+
+      try {
+        const response = await fetch('/api/tools/html-entity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, action })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('html-entity-display').textContent = data.data.result;
+          document.getElementById('html-entity-result').style.display = 'block';
+          showToast(`✅ HTML ${action}d!`, 'success');
+        }
+      } catch (error) {
+        showToast(`❌ Failed to ${action}`, 'error');
+      }
+    }
+
+    // JSON Formatter
+    document.getElementById('json-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const json = document.getElementById('json-input').value;
+      const indent = document.getElementById('json-indent').value;
+
+      try {
+        const response = await fetch('/api/tools/json-format', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ json, indent })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('json-display').textContent = data.data.formatted;
+          document.getElementById('json-result').style.display = 'block';
+          showToast('✅ JSON formatted!', 'success');
+        } else {
+          showToast('❌ ' + data.error, 'error');
+        }
+      } catch (error) {
+        showToast('❌ Failed to format JSON', 'error');
+      }
+    });
+
+    // JWT Decoder
+    document.getElementById('jwt-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = document.getElementById('jwt-input').value;
+
+      try {
+        const response = await fetch('/api/tools/jwt-decode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('jwt-header').textContent = JSON.stringify(data.data.header, null, 2);
+          document.getElementById('jwt-payload').textContent = JSON.stringify(data.data.payload, null, 2);
+          document.getElementById('jwt-result').style.display = 'block';
+          showToast('✅ JWT decoded!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to decode JWT', 'error');
+      }
+    });
+
+    // CSV to JSON Converter
+    document.getElementById('csv-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const csv = document.getElementById('csv-input').value;
+
+      try {
+        const response = await fetch('/api/tools/csv-to-json', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ csv })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('csv-display').textContent = data.data.formatted;
+          document.getElementById('csv-result').style.display = 'block';
+          showToast('✅ CSV converted to JSON!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to convert CSV', 'error');
+      }
+    });
+
+    // Text Statistics
+    document.getElementById('text-stats-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('text-stats-input').value;
+
+      try {
+        const response = await fetch('/api/tools/text-stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('text-stats-display').innerHTML = `
+            <div class="stat-item">
+              <div class="stat-label">Characters</div>
+              <div class="stat-value">${data.data.characters}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">No Spaces</div>
+              <div class="stat-value">${data.data.charactersNoSpaces}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Words</div>
+              <div class="stat-value">${data.data.words}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Sentences</div>
+              <div class="stat-value">${data.data.sentences}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Paragraphs</div>
+              <div class="stat-value">${data.data.paragraphs}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Reading Time</div>
+              <div class="stat-value">${data.data.readingTime} min</div>
+            </div>
+          `;
+          document.getElementById('text-stats-result').style.display = 'block';
+          showToast('✅ Text analyzed!', 'success');
+        }
+      } catch (error) {
+        showToast('❌ Failed to analyze text', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dongtube APIs</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .header {
+      margin-bottom: 35px;
+    }
+
+    .welcome {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .main-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      letter-spacing: -0.5px;
+    }
+
+    .version-badge {
+      background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+      color: #fff;
+      padding: 4px 12px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .subtitle {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 14px;
+      line-height: 1.6;
+    }
+
+    .links {
+      display: flex;
+      gap: 18px;
+    }
+
+    .link-item {
+      color: #1a1a1a;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding-bottom: 1px;
+      transition: all 0.2s;
+    }
+
+    .link-item:hover {
+      color: #555;
+      border-bottom-color: #555;
+    }
+
+    .stats-box {
+      background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+      border: 1px solid #e5e5e5;
+      padding: 18px;
+      margin-bottom: 28px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .stat-number {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #1a1a1a;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 500;
+    }
+
+    .search-box {
+      background: #fff;
+      border: 1.5px solid #e5e5e5;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 8px;
+      transition: border-color 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .search-box:focus-within {
+      border-color: #1a1a1a;
+    }
+
+    .search-icon {
+      color: #aaa;
+      font-size: 1rem;
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      font-size: 0.875rem;
+      outline: none;
+      background: transparent;
+      color: #333;
+    }
+
+    .search-box input::placeholder {
+      color: #bbb;
+    }
+
+    .endpoints-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 50px;
+    }
+
+    .endpoint-card {
+      background: #fff;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .endpoint-card:hover {
+      border-color: #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    .endpoint-card.expanded {
+      border-color: #1a1a1a;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .endpoint-header {
+      padding: 18px 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      user-select: none;
+    }
+
+    .method-badge {
+      padding: 6px 14px;
+      border: 1.5px solid #1a1a1a;
+      font-weight: 800;
+      font-size: 0.65rem;
+      letter-spacing: 0.8px;
+      background: #fff;
+      color: #1a1a1a;
+      flex-shrink: 0;
+      border-radius: 6px;
+      min-width: 85px;
+      text-align: center;
+    }
+
+    .endpoint-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .endpoint-path {
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #1a1a1a;
+      font-weight: 600;
+      margin-bottom: 5px;
+      word-break: break-all;
+    }
+
+    .endpoint-description {
+      font-size: 0.8rem;
+      color: #888;
+      font-weight: 400;
+    }
+
+    .expand-icon {
+      font-size: 0.75rem;
+      color: #888;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+    }
+
+    .endpoint-card.expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .endpoint-body {
+      display: none;
+      border-top: 1.5px solid #f0f0f0;
+      background: #fafafa;
+      padding: 28px 22px;
+    }
+
+    .endpoint-card.expanded .endpoint-body {
+      display: block;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: '▶';
+      font-size: 0.65rem;
+      color: #888;
+    }
+
+    .method-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .method-option {
+      padding: 9px 22px;
+      border: 1.5px solid #e5e5e5;
+      background: #fff;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      border-radius: 6px;
+      transition: all 0.2s;
+      color: #666;
+    }
+
+    .method-option:hover {
+      border-color: #aaa;
+      background: #fafafa;
+    }
+
+    .method-option.active {
+      background: #1a1a1a;
+      color: #fff;
+      border-color: #1a1a1a;
+    }
+
+    .param-group {
+      margin-bottom: 20px;
+    }
+
+    .param-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .required-mark {
+      color: #e74c3c;
+      font-size: 0.85rem;
+    }
+
+    .param-hint {
+      font-size: 0.75rem;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .param-input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #e5e5e5;
+      font-size: 0.85rem;
+      background: #fff;
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      border-radius: 6px;
+      transition: all 0.2s;
+      color: #333;
+    }
+
+    .param-input:focus {
+      outline: none;
+      border-color: #1a1a1a;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(26,26,26,0.05);
+    }
+
+    .execute-btn {
+      background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+      margin-top: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    .execute-btn:hover {
+      background: linear-gradient(135deg, #333 0%, #555 100%);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transform: translateY(-1px);
+    }
+
+    .execute-btn:active {
+      transform: translateY(0);
+    }
+
+    .execute-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .result-section {
+      margin-top: 28px;
+      display: none;
+    }
+
+    .result-section.show {
+      display: block;
+    }
+
+    .result-header {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 12px;
+    }
+
+    .result-box {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      max-height: 500px;
+      overflow: auto;
+      font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+      font-size: 0.8rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .result-meta {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #333;
+      line-height: 1.8;
+      color: #9cdcfe;
+    }
+
+    .result-meta strong {
+      color: #4ec9b0;
+    }
+
+    .result-box img,
+    .result-box video {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-top: 16px;
+      border: 2px solid #333;
+      border-radius: 6px;
+    }
+
+    .result-box pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
+    }
+
+    .status-codes {
+      margin-top: 32px;
+      padding-top: 28px;
+      border-top: 1.5px solid #e5e5e5;
+    }
+
+    .codes-title {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #1a1a1a;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 16px;
+    }
+
+    .status-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .status-table th {
+      text-align: left;
+      padding: 12px 16px;
+      background: #f8f8f8;
+      border-bottom: 1.5px solid #e5e5e5;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .status-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.8rem;
+    }
+
+    .status-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .status-code {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .status-icon {
+      font-size: 0.95rem;
+    }
+
+    .status-icon.success { color: #27ae60; }
+    .status-icon.error { color: #e74c3c; }
+    .status-icon.warning { color: #f39c12; }
+
+    .footer {
+      text-align: center;
+      padding: 35px 20px;
+      color: #999;
+      font-size: 0.8rem;
+      line-height: 1.8;
+      border-top: 1.5px solid #e5e5e5;
+      margin-top: 20px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #888;
+    }
+
+    .spinner {
+      border: 3px solid #f0f0f0;
+      border-top: 3px solid #1a1a1a;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 70px 20px;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    /* Custom scrollbar */
+    .result-box::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .result-box::-webkit-scrollbar-track {
+      background: #2a2a2a;
+    }
+
+    .result-box::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
+    .result-box::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      .main-title {
+        font-size: 1.4rem;
+      }
+
+      .endpoint-header {
+        flex-wrap: wrap;
+        padding: 16px 18px;
+      }
+
+      .method-badge {
+        min-width: 75px;
+        font-size: 0.6rem;
+      }
+
+      .endpoint-body {
+        padding: 22px 18px;
+      }
+
+      .stats-box {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="welcome">Hi Visitor! Welcome To</div>
+      <div class="title-row">
+        <h1 class="main-title">Dongtube APIs.</h1>
+        <span class="version-badge">v2.0</span>
+      </div>
+      <p class="subtitle">This interactive interface allows you to explore and test our comprehensive collection of API endpoints in real-time.</p>
+      <div class="links">
+  <a class="link-item" href="https://whatsapp.com/channel/0029Vb91qeW17Emm4TVqu53K" target="_blank">
+    WhatsApp Information Channel.
+  </a>
+  <a class="link-item" href="https://wa.me/6283143961588" target="_blank">
+    Contact Admin.
+  </a>
+      </div>
+    </div>
+
+    <div class="stats-box">
+      <div class="stat-number" id="totalEndpoints">0</div>
+      <div class="stat-label">Total Endpoints</div>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search endpoints...">
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p><strong>Loading endpoints...</strong></p>
+    </div>
+
+    <div id="endpointsContainer" class="endpoints-container"></div>
+
+    <div class="footer">
+      Thx To All Users And Contributors.<br>
+      © Dongtube APIs. | All Rights Reserved.
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let allEndpoints = [];
+
+    async function loadEndpoints() {
+      try {
+        const response = await fetch(`${API_BASE}/api/docs`);
+        const data = await response.json();
+        
+        if (data.success) {
+          allEndpoints = data.endpoints;
+          renderEndpoints(allEndpoints);
+          updateStats();
+        }
+      } catch (error) {
+        console.error('Error loading endpoints:', error);
+        document.getElementById('loading').innerHTML = '<p style="color: #e74c3c;"><strong>Failed to load endpoints. Please refresh the page.</strong></p>';
+      } finally {
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('totalEndpoints').textContent = allEndpoints.length;
+    }
+
+    function renderEndpoints(endpoints) {
+      const container = document.getElementById('endpointsContainer');
+      
+      if (endpoints.length === 0) {
+        container.innerHTML = '<div class="no-results">No endpoints found</div>';
+        return;
+      }
+
+      container.innerHTML = endpoints.map((ep, idx) => {
+        const hasParams = ep.params && ep.params.length > 0;
+        const methods = ep.method.split(',').map(m => m.trim());
+        const epId = `endpoint-${idx}`;
+        
+        return `
+          <div class="endpoint-card" id="${epId}">
+            <div class="endpoint-header" onclick="toggleEndpoint('${epId}')">
+              <div class="method-badge">${ep.method}</div>
+              <div class="endpoint-info">
+                <div class="endpoint-path">${ep.path}</div>
+                <div class="endpoint-description">${ep.description || ep.name}</div>
+              </div>
+              <div class="expand-icon">▼</div>
+            </div>
+            <div class="endpoint-body">
+              <div class="section-title">TRY IT OUT</div>
+              
+              <div class="method-selector">
+                ${methods.map(m => `
+                  <div class="method-option ${m === methods[0] ? 'active' : ''}" 
+                       onclick="selectMethod('${epId}', '${m}')" 
+                       data-method="${m}">
+                    ${m}
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="params-container">
+                ${hasParams ? ep.params.map(p => `
+                  <div class="param-group">
+                    <div class="param-label">
+                      ${p.name}
+                      ${p.required ? '<span class="required-mark">*</span>' : ''}
+                    </div>
+                    <div class="param-hint">${p.description || 'Input ' + p.name}</div>
+                    <input type="text" 
+                           class="param-input" 
+                           data-param="${p.name}" 
+                           placeholder="${p.placeholder || p.description || p.name}">
+                  </div>
+                `).join('') : '<p style="font-size: 0.85rem; color: #888; margin-bottom: 15px;">No parameters required</p>'}
+              </div>
+              
+              <button class="execute-btn" onclick="executeEndpoint('${epId}', '${ep.path}', ${ep.responseBinary || false})">
+                Execute
+              </button>
+              
+              <div class="result-section" id="result-${epId}">
+                <div class="result-header">RESPONSE</div>
+                <div class="result-box" id="result-content-${epId}"></div>
+              </div>
+              
+              <div class="status-codes">
+                <div class="codes-title">HTTP STATUS CODES</div>
+                <table class="status-table">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="status-code">
+                          <span class="status-icon success">✓</span>
+                          <span>200</span>
+                        </div>
+                      </td>
+                      <td>OK - Request successful</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="status-code">
+                          <span class="status-icon error">✕</span>
+                          <span>400</span>
+                        </div>
+                      </td>
+                      <td>Bad Request - Invalid parameters or missing required fields</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="status-code">
+                          <span class="status-icon error">✕</span>
+                          <span>405</span>
+                        </div>
+                      </td>
+                      <td>Method Not Allowed - HTTP method not supported</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="status-code">
+                          <span class="status-icon error">✕</span>
+                          <span>500</span>
+                        </div>
+                      </td>
+                      <td>Internal Server Error - Something went wrong</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleEndpoint(id) {
+      const card = document.getElementById(id);
+      const wasExpanded = card.classList.contains('expanded');
+      
+      // Close all cards
+      document.querySelectorAll('.endpoint-card').forEach(c => {
+        c.classList.remove('expanded');
+      });
+      
+      // Open clicked card if it wasn't expanded
+      if (!wasExpanded) {
+        card.classList.add('expanded');
+      }
+    }
+
+    function selectMethod(epId, method) {
+      const card = document.getElementById(epId);
+      const options = card.querySelectorAll('.method-option');
+      
+      options.forEach(opt => {
+        if (opt.dataset.method === method) {
+          opt.classList.add('active');
+        } else {
+          opt.classList.remove('active');
+        }
+      });
+    }
+
+    async function executeEndpoint(epId, path, isBinary) {
+      const card = document.getElementById(epId);
+      const resultSection = document.getElementById(`result-${epId}`);
+      const resultContent = document.getElementById(`result-content-${epId}`);
+      
+      // Get selected method
+      const activeMethod = card.querySelector('.method-option.active');
+      const method = activeMethod ? activeMethod.dataset.method : 'GET';
+      
+      // Collect parameters
+      const params = {};
+      card.querySelectorAll('input[data-param]').forEach(input => {
+        if (input.value.trim()) {
+          params[input.dataset.param] = input.value.trim();
+        }
+      });
+
+      let url = `${API_BASE}${path}`;
+      
+      // Add cache buster for binary/random endpoints
+      if (isBinary || path.includes('/random/')) {
+        const separator = url.includes('?') ? '&' : '?';
+        url += `${separator}_t=${Date.now()}`;
+      }
+      
+      // Add params to URL for GET requests
+      if (method === 'GET' && Object.keys(params).length > 0) {
+        const separator = url.includes('?') ? '&' : '?';
+        url += `${separator}${new URLSearchParams(params).toString()}`;
+      }
+
+      resultSection.classList.add('show');
+      resultContent.innerHTML = '<div class="loading"><div class="spinner"></div><p><strong>Loading...</strong></p></div>';
+
+      try {
+        const options = { 
+          method: method,
+          headers: {},
+          cache: 'no-store'
+        };
+        
+        // Add body for non-GET requests
+        if (method !== 'GET' && Object.keys(params).length > 0) {
+          options.headers['Content-Type'] = 'application/json';
+          options.body = JSON.stringify(params);
+        }
+
+        const response = await fetch(url, options);
+        const contentType = response.headers.get('content-type');
+
+        // Handle binary responses (images/videos)
+        if (isBinary || (contentType && contentType.includes('image'))) {
+          const blob = await response.blob();
+          const imgUrl = URL.createObjectURL(blob);
+          resultContent.innerHTML = `
+            <div class="result-meta">
+              <strong>Method:</strong> ${method}<br>
+              <strong>URL:</strong> ${url}<br>
+              <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+              <strong>Content-Type:</strong> ${contentType}
+            </div>
+            <img src="${imgUrl}" alt="Response Image" onload="URL.revokeObjectURL(this.src)">
+          `;
+        } else if (contentType && contentType.includes('video')) {
+          const blob = await response.blob();
+          const videoUrl = URL.createObjectURL(blob);
+          resultContent.innerHTML = `
+            <div class="result-meta">
+              <strong>Method:</strong> ${method}<br>
+              <strong>URL:</strong> ${url}<br>
+              <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+              <strong>Content-Type:</strong> ${contentType}
+            </div>
+            <video controls><source src="${videoUrl}" type="${contentType}"></video>
+          `;
+        } else {
+          // Handle JSON responses
+          const data = await response.json();
+          resultContent.innerHTML = `
+            <div class="result-meta">
+              <strong>Method:</strong> ${method}<br>
+              <strong>URL:</strong> ${url}<br>
+              <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+              <strong>Content-Type:</strong> ${contentType || 'application/json'}
+            </div>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+        }
+      } catch (error) {
+        resultContent.innerHTML = `
+          <div class="result-meta"><strong>ERROR</strong></div>
+          <pre>${error.message}</pre>
+        `;
+      }
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase();
+      const filtered = allEndpoints.filter(ep => 
+        ep.name.toLowerCase().includes(query) ||
+        ep.path.toLowerCase().includes(query) ||
+        (ep.description && ep.description.toLowerCase().includes(query)) ||
+        (ep.category && ep.category.toLowerCase().includes(query))
+      );
+      renderEndpoints(filtered);
+    });
+
+    // Load endpoints on page load
+    loadEndpoints();
+  </script>
+</body>
+</html>

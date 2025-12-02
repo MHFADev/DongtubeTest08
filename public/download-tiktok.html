@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dongtube Downloader - Download TikTok Videos Tanpa Watermark</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Download video TikTok tanpa watermark secara gratis dan cepat. Dongtube Downloader - Tool terbaik untuk download TikTok HD quality.">
+  <meta name="keywords" content="download tiktok, tiktok downloader, download video tiktok, tiktok no watermark, download tiktok tanpa watermark">
+  <meta name="author" content="Dongtube">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.dongtube.my.id/download-tiktok.html">
+  <meta property="og:title" content="Dongtube Downloader - Download TikTok Tanpa Watermark">
+  <meta property="og:description" content="Download video TikTok tanpa watermark secara gratis dan cepat. Kualitas HD, mudah digunakan, dan 100% gratis!">
+  <meta property="og:image" content="https://www.dongtube.my.id/logo.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Dongtube">
+  <meta property="og:locale" content="id_ID">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://www.dongtube.my.id/download-tiktok.html">
+  <meta name="twitter:title" content="Dongtube Downloader - Download TikTok Tanpa Watermark">
+  <meta name="twitter:description" content="Download video TikTok tanpa watermark secara gratis dan cepat. Kualitas HD, mudah digunakan, dan 100% gratis!">
+  <meta name="twitter:image" content="https://www.dongtube.my.id/logo.jpg">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="/logo.jpg">
+  <link rel="shortcut icon" type="image/jpeg" href="/logo.jpg">
+  <link rel="apple-touch-icon" href="/logo.jpg">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
+  
+  <!-- Stylesheet -->
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <!-- Three.js 3D Background Canvas -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Main Container -->
+  <div class="container">
+    
+    <!-- Statistics Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-label">Total Downloads</div>
+        <div class="stat-value" id="statsCount">0</div>
+      </div>
+      <button class="history-toggle-btn" onclick="toggleHistory()" title="Lihat Riwayat">
+        📜 Riwayat
+      </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="main-card">
+      <!-- Logo and Title -->
+      <div class="brand">
+        <img src="logo.jpg" alt="Dongtube Logo" class="logo" loading="lazy">
+        <h1 class="title">Dongtube Downloader</h1>
+      </div>
+      
+      <!-- Input Card -->
+      <div class="input-card">
+        <input 
+          type="text" 
+          id="urlInput" 
+          class="url-input" 
+          placeholder="Paste TikTok URL..."
+        />
+        <button id="downloadBtn" class="btn-download">
+          <span>Download</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <p>Processing...</p>
+      </div>
+
+      <!-- Result Card -->
+      <div id="result" class="result-card hidden">
+        <img id="thumbnail" class="thumbnail" alt="Video" loading="lazy">
+        <div class="info">
+          <h3 id="title" class="video-title"></h3>
+          <p id="author" class="author"></p>
+          <div id="stats" class="stats"></div>
+        </div>
+        
+        <!-- Quality Selector -->
+        <div id="qualitySelector" class="quality-selector hidden">
+          <div class="quality-label">Pilih Kualitas:</div>
+          <div class="quality-buttons">
+            <button id="qualityHD" class="quality-btn active" onclick="selectQuality('HD')">
+              HD
+            </button>
+            <button id="qualitySD" class="quality-btn" onclick="selectQuality('SD')">
+              SD
+            </button>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn-action" onclick="showVideoPreview(currentVideoData.videoUrl, currentVideoData.cover)" title="Preview Video">
+            ▶️ Preview
+          </button>
+          <button class="btn-action" onclick="shareVideo()" title="Bagikan">
+            🔗 Share
+          </button>
+          <button class="btn-action" onclick="copyVideoLink()" title="Salin Link">
+            📋 Copy
+          </button>
+        </div>
+
+        <button id="downloadVideoBtn" class="btn-download-video">
+          <span id="downloadText">📥 Download Video</span>
+        </button>
+        <!-- Download Progress -->
+        <div id="downloadProgress" class="download-progress hidden">
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+          <p id="progressText" class="progress-text">Downloading...</p>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div id="error" class="error-card hidden">
+        <div class="error-icon">⚠️</div>
+        <p id="errorMsg"></p>
+        <button id="retryBtn" class="btn-retry">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Download History Section -->
+    <div id="historySection" class="history-section hidden">
+      <div class="history-header">
+        <h3>📜 Riwayat Download</h3>
+        <button class="btn-clear-history" onclick="clearHistory()">🗑️ Hapus</button>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="history-empty">Belum ada riwayat download</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Video Preview Modal -->
+  <div id="videoPreview" class="video-preview-modal hidden">
+    <div class="video-preview-overlay" onclick="hideVideoPreview()"></div>
+    <div class="video-preview-content">
+      <button class="video-preview-close" onclick="hideVideoPreview()">×</button>
+      <video id="videoPlayer" class="video-player" controls autoplay loop>
+        <source type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <!-- Professional Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Dongtube Downloader</h4>
+        <p>Download TikTok videos without watermark, fast and free.</p>
+      </div>
+      <div class="footer-section">
+        <h4>Information</h4>
+        <ul>
+          <li>Free to use</li>
+          <li>No registration required</li>
+          <li>Fast & secure</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Technology</h4>
+        <ul>
+          <li>Powered by Three.js</li>
+          <li>API by Dongtube</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Dongtube Downloader. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <script src="script.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Management - Dongtube API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #FFA500;
+      --primary-light: #FFB733;
+      --secondary: #FFD700;
+      --bg-dark: #0D0D0D;
+      --bg-darker: #080808;
+      --bg-card: #1A1A1A;
+      --text: #FFFFFF;
+      --text-muted: #888888;
+      --border: #2A2A2A;
+      --success: #00FF88;
+      --error: #FF4444;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-back {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 165, 0, 0.1);
+      border-color: var(--primary);
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--bg-dark);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 165, 0, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 165, 0, 0.1);
+      border-color: var(--primary);
+    }
+
+    .btn-danger {
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    .btn-danger:hover {
+      background: rgba(255, 68, 68, 0.2);
+    }
+
+    .btn-success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--success);
+    }
+
+    .btn-success:hover {
+      background: rgba(0, 255, 136, 0.2);
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 16px 10px 44px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .filter-select {
+      padding: 10px 16px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+    }
+
+    .data-table thead th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-table tbody tr {
+      background: var(--bg-darker);
+      transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+      background: rgba(255, 165, 0, 0.05);
+      transform: scale(1.005);
+    }
+
+    .data-table tbody td {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table tbody td:first-child {
+      border-left: 1px solid var(--border);
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+
+    .data-table tbody td:last-child {
+      border-right: 1px solid var(--border);
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-admin {
+      background: rgba(255, 68, 68, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+
+    .badge-vip {
+      background: rgba(255, 165, 0, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(255, 165, 0, 0.3);
+    }
+
+    .badge-user {
+      background: rgba(136, 136, 136, 0.1);
+      color: var(--text-muted);
+      border: 1px solid rgba(136, 136, 136, 0.3);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .btn-close {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      background: rgba(255, 68, 68, 0.1);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+      color: var(--error);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-close:hover {
+      background: rgba(255, 68, 68, 0.2);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 16px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--bg-dark);
+      font-size: 16px;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .user-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 16px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .controls {
+        width: 100%;
+      }
+
+      .search-box {
+        min-width: 100%;
+      }
+    }
+
+    /* Custom Notification System */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 420px;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      animation: slideInRight 0.3s ease-out;
+      backdrop-filter: blur(10px);
+      min-width: 320px;
+    }
+
+    .toast.hiding {
+      animation: slideOutRight 0.3s ease-out;
+    }
+
+    .toast-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .toast-message {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .toast-close {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      background: none;
+      border: none;
+      padding: 0;
+      margin-top: 2px;
+    }
+
+    .toast-close:hover {
+      opacity: 1;
+    }
+
+    .toast.success {
+      border-color: rgba(0, 255, 136, 0.3);
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 200, 100, 0.05) 100%);
+    }
+
+    .toast.success .toast-icon {
+      color: var(--success);
+    }
+
+    .toast.success .toast-title {
+      color: var(--success);
+    }
+
+    .toast.error {
+      border-color: rgba(255, 68, 68, 0.3);
+      background: linear-gradient(135deg, rgba(255, 68, 68, 0.1) 0%, rgba(200, 0, 0, 0.05) 100%);
+    }
+
+    .toast.error .toast-icon {
+      color: var(--error);
+    }
+
+    .toast.error .toast-title {
+      color: var(--error);
+    }
+
+    .toast.info {
+      border-color: rgba(255, 165, 0, 0.3);
+      background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(255, 180, 0, 0.05) 100%);
+    }
+
+    .toast.info .toast-icon {
+      color: var(--primary);
+    }
+
+    .toast.info .toast-title {
+      color: var(--primary);
+    }
+
+    /* Custom Confirm Dialog */
+    .confirm-dialog {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 10001;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .confirm-dialog.active {
+      display: flex;
+    }
+
+    .confirm-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 440px;
+      width: 90%;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .confirm-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 165, 0, 0.1);
+      border-radius: 50%;
+      color: var(--primary);
+    }
+
+    .confirm-title {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .confirm-message {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .confirm-actions button {
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .toast-container {
+        top: 16px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
+      }
+
+      .toast {
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="window.location.href='/admin-panel.html'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#FFA500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <h1>User Management</h1>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-secondary" onclick="window.location.href='/admin-panel.html'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Admin Panel
+        </button>
+        <button class="btn btn-secondary" onclick="window.location.href='/'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Exit to Home
+        </button>
+        <button class="btn btn-primary" onclick="loadUsers()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M23 4v6h-6M1 20v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">All Users</h2>
+        <div class="controls">
+          <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="11" cy="11" r="8" stroke="#888888" stroke-width="2"/>
+              <path d="M21 21l-4.35-4.35" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" class="search-input" id="search-users" placeholder="Search users...">
+          </div>
+          <select class="filter-select" id="filter-role">
+            <option value="">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="vip">VIP</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container" id="users-table">
+        <div class="loading">
+          <div class="spinner"></div>
+          <p>Loading users...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="grant-vip-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Grant VIP Access</h3>
+        <button class="btn-close" onclick="closeModal('grant-vip-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="grant-vip-form">
+        <input type="hidden" id="grant-user-id">
+        
+        <div class="form-group">
+          <label class="form-label">User Email</label>
+          <input type="text" class="form-input" id="grant-user-email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">VIP Duration</label>
+          <select class="form-select" id="grant-duration" required>
+            <option value="7d">7 Days</option>
+            <option value="30d">30 Days (1 Month)</option>
+            <option value="90d">90 Days (3 Months)</option>
+            <option value="1y">1 Year</option>
+            <option value="lifetime">Lifetime (Until 2099)</option>
+            <option value="permanent">Permanent (No Expiry)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Grant VIP Access
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="edit-user-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit User</h3>
+        <button class="btn-close" onclick="closeModal('edit-user-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="edit-user-form">
+        <input type="hidden" id="edit-user-id">
+        
+        <div class="form-group">
+          <label class="form-label">User Email</label>
+          <input type="text" class="form-input" id="edit-user-email" readonly>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="edit-user-role" required>
+            <option value="user">User</option>
+            <option value="vip">VIP</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">VIP Expires At (Optional)</label>
+          <input type="datetime-local" class="form-input" id="edit-vip-expires">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Update User
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let users = [];
+
+    async function loadUsers() {
+      const table = document.getElementById('users-table');
+      table.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading users...</p></div>';
+      
+      try {
+        const response = await fetch('/admin/users', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        users = data.users || [];
+        renderUsersTable();
+      } catch (error) {
+        table.innerHTML = '<div class="empty-state"><p>Failed to load users</p></div>';
+      }
+    }
+
+    function renderUsersTable() {
+      const table = document.getElementById('users-table');
+      const search = document.getElementById('search-users').value.toLowerCase();
+      const filterRole = document.getElementById('filter-role').value;
+      
+      let filtered = users.filter(user => {
+        const matchesSearch = user.email.toLowerCase().includes(search);
+        const matchesRole = filterRole === '' || user.role === filterRole;
+        return matchesSearch && matchesRole;
+      });
+      
+      if (filtered.length === 0) {
+        table.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2"/>
+              <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <p>No users found</p>
+          </div>
+        `;
+        return;
+      }
+      
+      table.innerHTML = `
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>VIP Expires</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map(user => {
+              const vipExpires = user.vipExpiresAt ? new Date(user.vipExpiresAt).toLocaleDateString() : '-';
+              const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never';
+              const isVipExpired = user.vipExpiresAt && new Date(user.vipExpiresAt) < new Date();
+              
+              return `
+                <tr>
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
+                      <div class="user-info">
+                        <h4>${user.email}</h4>
+                        <p>ID: ${user.id.substring(0, 8)}...</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-${user.role}">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        ${user.role === 'admin' ? 
+                          '<path d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="2"/>' :
+                          user.role === 'vip' ?
+                          '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/>' :
+                          '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>'
+                        }
+                      </svg>
+                      ${user.role.toUpperCase()}
+                    </span>
+                  </td>
+                  <td>${isVipExpired ? '<span style="color: var(--error);">' + vipExpires + ' (Expired)</span>' : vipExpires}</td>
+                  <td>${lastLogin}</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn btn-icon btn-secondary" onclick="openEditModal('${user.id}', '${user.email}', '${user.role}', '${user.vipExpiresAt || ''}')" title="Edit User">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </button>
+                      ${user.role !== 'vip' ? `
+                        <button class="btn btn-icon btn-success" onclick="openGrantVipModal('${user.id}', '${user.email}')" title="Grant VIP">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </button>
+                      ` : `
+                        <button class="btn btn-icon btn-danger" onclick="revokeVip('${user.id}', '${user.email}')" title="Revoke VIP">
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          </svg>
+                        </button>
+                      `}
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function openGrantVipModal(userId, email) {
+      document.getElementById('grant-user-id').value = userId;
+      document.getElementById('grant-user-email').value = email;
+      document.getElementById('grant-vip-modal').classList.add('active');
+    }
+
+    function openEditModal(userId, email, role, vipExpiresAt) {
+      document.getElementById('edit-user-id').value = userId;
+      document.getElementById('edit-user-email').value = email;
+      document.getElementById('edit-user-role').value = role;
+      
+      if (vipExpiresAt && vipExpiresAt !== 'null') {
+        const date = new Date(vipExpiresAt);
+        document.getElementById('edit-vip-expires').value = date.toISOString().slice(0, 16);
+      } else {
+        document.getElementById('edit-vip-expires').value = '';
+      }
+      
+      document.getElementById('edit-user-modal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    async function revokeVip(userId, email) {
+      showConfirm(
+        `Apakah Anda yakin ingin mencabut akses VIP dari ${email}?`,
+        async () => {
+          try {
+            const response = await fetch(`/admin/users/${userId}/revoke-vip`, {
+              method: 'POST',
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              await loadUsers();
+              showToast('Berhasil!', 'Akses VIP berhasil dicabut', 'success');
+            } else {
+              showToast('Gagal', 'Tidak dapat mencabut akses VIP', 'error');
+            }
+          } catch (error) {
+            showToast('Error', 'Terjadi kesalahan saat mencabut VIP', 'error');
+          }
+        },
+        {
+          title: 'Cabut Akses VIP',
+          confirmText: 'Ya, Cabut',
+          cancelText: 'Batal',
+          type: 'danger'
+        }
+      );
+    }
+
+    document.getElementById('grant-vip-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const userId = document.getElementById('grant-user-id').value;
+      const duration = document.getElementById('grant-duration').value;
+      
+      try {
+        const response = await fetch(`/admin/users/${userId}/grant-vip`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ duration })
+        });
+        
+        if (response.ok) {
+          closeModal('grant-vip-modal');
+          await loadUsers();
+          showToast('Berhasil!', 'Akses VIP berhasil diberikan', 'success');
+        } else {
+          showToast('Gagal', 'Tidak dapat memberikan akses VIP', 'error');
+        }
+      } catch (error) {
+        showToast('Error', 'Terjadi kesalahan saat memberikan VIP', 'error');
+      }
+    });
+
+    document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const userId = document.getElementById('edit-user-id').value;
+      const role = document.getElementById('edit-user-role').value;
+      const vipExpiresValue = document.getElementById('edit-vip-expires').value;
+      
+      const vipExpiresAt = vipExpiresValue ? new Date(vipExpiresValue).toISOString() : null;
+      
+      try {
+        const response = await fetch(`/admin/users/${userId}/force-update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ role, vipExpiresAt })
+        });
+        
+        if (response.ok) {
+          closeModal('edit-user-modal');
+          await loadUsers();
+          showToast('Berhasil!', 'Data user berhasil diperbarui', 'success');
+        } else {
+          showToast('Gagal', 'Tidak dapat memperbarui user', 'error');
+        }
+      } catch (error) {
+        showToast('Error', 'Terjadi kesalahan saat update user', 'error');
+      }
+    });
+
+    document.getElementById('search-users').addEventListener('input', renderUsersTable);
+    document.getElementById('filter-role').addEventListener('change', renderUsersTable);
+
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('active');
+      }
+    };
+
+    loadUsers();
+
+    // Custom Notification System
+    function showToast(title, message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      
+      const icons = {
+        success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+        error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>',
+        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'
+      };
+      
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          ${message ? `<div class="toast-message">${message}</div>` : ''}
+        </div>
+        <button class="toast-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      `;
+      
+      const closeBtn = toast.querySelector('.toast-close');
+      closeBtn.onclick = () => removeToast(toast);
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => removeToast(toast), 5000);
+    }
+
+    function removeToast(toast) {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    function showConfirm(message, onConfirm, options = {}) {
+      const dialog = document.getElementById('confirm-dialog');
+      const title = options.title || 'Konfirmasi';
+      const confirmText = options.confirmText || 'Ya';
+      const cancelText = options.cancelText || 'Batal';
+      const type = options.type || 'warning';
+      
+      const icons = {
+        warning: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>',
+        danger: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>'
+      };
+      
+      document.getElementById('confirm-icon').innerHTML = icons[type] || icons.warning;
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      document.getElementById('confirm-btn').textContent = confirmText;
+      document.getElementById('cancel-btn').textContent = cancelText;
+      
+      const confirmBtn = document.getElementById('confirm-btn');
+      const cancelBtn = document.getElementById('cancel-btn');
+      
+      confirmBtn.onclick = () => {
+        dialog.classList.remove('active');
+        if (onConfirm) onConfirm();
+      };
+      
+      cancelBtn.onclick = () => {
+        dialog.classList.remove('active');
+      };
+      
+      dialog.onclick = (e) => {
+        if (e.target === dialog) {
+          dialog.classList.remove('active');
+        }
+      };
+      
+      dialog.classList.add('active');
+    }
+  </script>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Confirm Dialog -->
+  <div id="confirm-dialog" class="confirm-dialog">
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon"></div>
+      <div class="confirm-title" id="confirm-title">Konfirmasi</div>
+      <div class="confirm-message" id="confirm-message"></div>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" id="cancel-btn">Batal</button>
+        <button class="btn btn-danger" id="confirm-btn">Ya</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

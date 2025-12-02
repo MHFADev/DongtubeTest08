@@ -1,5 +1,6 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import pg from 'pg';
 
 dotenv.config();
 
@@ -9,11 +10,11 @@ const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 const isReplit = process.env.REPL_ID || process.env.REPLIT_DEV_DOMAIN;
 
 const serverlessPoolConfig = {
-  max: 2,
+  max: 1,
   min: 0,
-  acquire: 20000,
-  idle: 5000,
-  evict: 10000
+  acquire: 3000,
+  idle: 0,
+  evict: 60000
 };
 
 const standardPoolConfig = {
@@ -38,6 +39,7 @@ if (useReplitDb) {
     host: PGHOST,
     port: PGPORT,
     dialect: 'postgres',
+    dialectModule: pg,
     logging: false,
     dialectOptions: {
       ssl: false
@@ -52,6 +54,7 @@ if (useReplitDb) {
   
   sequelize = new Sequelize(DATABASE_URL, {
     dialect: 'postgres',
+    dialectModule: pg,
     logging: false,
     dialectOptions: {
       ssl: sslRequired ? {
@@ -64,13 +67,14 @@ if (useReplitDb) {
   
   console.log('📊 Using DATABASE_URL connection');
   if (isServerless) {
-    console.log('🔧 Serverless mode: Using optimized connection pool (max: 2, idle: 5s)');
+    console.log('🔧 Serverless mode: Using optimized connection pool (max: 1, idle: 0)');
   }
 } else if (PGHOST && PGDATABASE) {
   sequelize = new Sequelize(PGDATABASE, PGUSER, PGPASSWORD, {
     host: PGHOST,
     port: PGPORT,
     dialect: 'postgres',
+    dialectModule: pg,
     logging: false,
     dialectOptions: {
       ssl: isServerless ? {

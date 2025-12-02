@@ -6,6 +6,10 @@ import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 
+// Force bundler to include pg package (required by Sequelize)
+import pg from 'pg';
+const { Client } = pg;
+
 // ==================== CRITICAL: Environment Validation ====================
 // Validate BEFORE any imports that might use these variables
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'DATABASE_URL'];

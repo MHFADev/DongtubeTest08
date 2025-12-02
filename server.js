@@ -139,6 +139,8 @@ function startFileWatcher() {
 export { routeManager, endpointSyncService };
 
 // ==================== START SERVER ====================
+let isDatabaseConnected = false;
+
 async function startServer() {
   try {
     // STEP 0: Initialize primary database
@@ -146,29 +148,36 @@ async function startServer() {
     const dbInitialized = await initDatabase();
     
     if (!dbInitialized) {
-      console.error(chalk.red("Failed to initialize primary database. Exiting..."));
-      process.exit(1);
+      console.error(chalk.yellow("⚠️  Failed to initialize primary database. Running in degraded mode..."));
+      console.log(chalk.yellow("   Some features requiring database will be unavailable.\n"));
+      isDatabaseConnected = false;
+    } else {
+      console.log(chalk.green("✓ Primary database initialized\n"));
+      isDatabaseConnected = true;
     }
     
-    console.log(chalk.green("✓ Primary database initialized\n"));
-    
-    // STEP 0.5: Initialize endpoint database (second database)
-    console.log(chalk.cyan("🗄️  Initializing endpoint database (Database #2)...\n"));
-    const endpointDbInitialized = await initEndpointDatabase();
-    
-    if (!endpointDbInitialized) {
-      console.error(chalk.red("Failed to initialize endpoint database. Continuing with primary database only..."));
-      console.log(chalk.yellow("⚠️  Endpoint management features will be disabled\n"));
-    } else {
-      console.log(chalk.green("✓ Endpoint database initialized\n"));
+    // STEP 0.5: Initialize endpoint database (second database) - only if primary DB is connected
+    let endpointDbInitialized = false;
+    if (isDatabaseConnected) {
+      console.log(chalk.cyan("🗄️  Initializing endpoint database (Database #2)...\n"));
+      endpointDbInitialized = await initEndpointDatabase();
       
-      // STEP 0.6: Schedule async sync (non-blocking)
-      console.log(chalk.cyan("📅 Scheduled async endpoint sync after server start\n"));
-      setTimeout(async () => {
-        console.log(chalk.cyan("🔄 Starting background endpoint sync...\n"));
-        await endpointSyncService.syncRoutesToDatabase();
-        console.log(chalk.green("✓ Background endpoint sync completed\n"));
-      }, 5000); // Sync 5 seconds after server starts
+      if (!endpointDbInitialized) {
+        console.error(chalk.red("Failed to initialize endpoint database. Continuing with primary database only..."));
+        console.log(chalk.yellow("⚠️  Endpoint management features will be disabled\n"));
+      } else {
+        console.log(chalk.green("✓ Endpoint database initialized\n"));
+        
+        // STEP 0.6: Schedule async sync (non-blocking)
+        console.log(chalk.cyan("📅 Scheduled async endpoint sync after server start\n"));
+        setTimeout(async () => {
+          console.log(chalk.cyan("🔄 Starting background endpoint sync...\n"));
+          await endpointSyncService.syncRoutesToDatabase();
+          console.log(chalk.green("✓ Background endpoint sync completed\n"));
+        }, 5000); // Sync 5 seconds after server starts
+      }
+    } else {
+      console.log(chalk.yellow("⚠️  Skipping endpoint database (primary database not connected)\n"));
     }
     
     // STEP 1: Register auth and admin routes

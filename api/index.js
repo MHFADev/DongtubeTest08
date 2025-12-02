@@ -734,18 +734,16 @@ export default async function handler(req, res) {
       }
     }
     
-    // Handle request with timeout
-    const requestPromise = new Promise((resolve, reject) => {
-      app(req, res);
+    // Handle request - let Express process it directly
+    return new Promise((resolve, reject) => {
+      // Set up listeners before calling app
       res.on('finish', resolve);
       res.on('error', reject);
+      res.on('close', resolve);
+      
+      // Call Express app
+      app(req, res);
     });
-    
-    await promiseWithTimeout(
-      requestPromise,
-      58000,
-      'Request timeout after 58s'
-    );
     
   } catch (error) {
     console.error('❌ Handler error:', error.message);
@@ -753,7 +751,7 @@ export default async function handler(req, res) {
     
     // Send error response if headers not sent
     if (!res.headersSent) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         error: 'Request processing failed',
         details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error',
@@ -762,3 +760,6 @@ export default async function handler(req, res) {
     }
   }
 }
+
+// Also export the Express app for alternative usage patterns
+export { app };

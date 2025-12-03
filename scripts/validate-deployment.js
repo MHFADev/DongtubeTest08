@@ -150,9 +150,9 @@ try {
     errors++;
   }
   
-  // Check builds
+  // Check builds or functions (modern Vercel uses functions + rewrites, legacy uses builds + routes)
   if (vercel.builds && vercel.builds.length > 0) {
-    log(`  ${checkmark()} Builds configured`, 'green');
+    log(`  ${checkmark()} Builds configured (legacy format)`, 'green');
     
     const hasApiIndex = vercel.builds.some(b => 
       b.src && b.src.includes('api/index.js') && b.use === '@vercel/node'
@@ -164,16 +164,21 @@ try {
       log(`  ${crossmark()} API entry point (api/index.js) not properly configured`, 'red');
       errors++;
     }
+  } else if (vercel.functions && vercel.functions['api/index.js']) {
+    log(`  ${checkmark()} Functions configured (modern format)`, 'green');
+    log(`  ${checkmark()} API entry point configured via functions`, 'green');
   } else {
-    log(`  ${warning()} No builds configured`, 'yellow');
+    log(`  ${warning()} No builds or functions configured`, 'yellow');
     warnings++;
   }
   
-  // Check routes
+  // Check routes or rewrites (modern format uses rewrites)
   if (vercel.routes && vercel.routes.length > 0) {
-    log(`  ${checkmark()} Routes configured`, 'green');
+    log(`  ${checkmark()} Routes configured (legacy format)`, 'green');
+  } else if (vercel.rewrites && vercel.rewrites.length > 0) {
+    log(`  ${checkmark()} Rewrites configured (modern format): ${vercel.rewrites.length} rules`, 'green');
   } else {
-    log(`  ${warning()} No routes configured`, 'yellow');
+    log(`  ${warning()} No routes or rewrites configured`, 'yellow');
     warnings++;
   }
   

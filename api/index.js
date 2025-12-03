@@ -651,6 +651,57 @@ async function initializeApp() {
       });
     });
     
+    // Vercel debug endpoint - shows environment info
+    app.get("/debug/vercel", async (req, res) => {
+      const { existsSync, readdirSync } = await import('fs');
+      
+      let routeFilesInfo = [];
+      let routesPathExists = false;
+      
+      try {
+        routesPathExists = existsSync(routesPath);
+        if (routesPathExists) {
+          const files = readdirSync(routesPath);
+          routeFilesInfo = files.filter(f => f.endsWith('.js'));
+        }
+      } catch (e) {
+        routeFilesInfo = [`Error: ${e.message}`];
+      }
+      
+      // Try to load metadata
+      let metadataCount = 0;
+      try {
+        const metadata = await loadRoutesMetadataOnce();
+        metadataCount = metadata.length;
+      } catch (e) {
+        metadataCount = -1;
+      }
+      
+      res.json({
+        environment: {
+          isServerless,
+          nodeEnv: process.env.NODE_ENV,
+          hasJwtSecret: !!process.env.JWT_SECRET,
+          hasDatabaseUrl: !!process.env.DATABASE_URL,
+          vercelEnv: process.env.VERCEL_ENV || 'not-vercel',
+          dirname: __dirname
+        },
+        routes: {
+          routesPath,
+          routesPathExists,
+          routeFilesCount: routeFilesInfo.length,
+          routeFiles: routeFilesInfo.slice(0, 10),
+          metadataCount,
+          cachedMetadata: cachedRouteMetadata ? cachedRouteMetadata.length : 0
+        },
+        database: {
+          isAvailable: isDatabaseAvailable,
+          initError: initializationError ? initializationError.message : null
+        },
+        timestamp: new Date().toISOString()
+      });
+    });
+    
     // Apply VIP access check middleware ONLY if database is available
     if (isDatabaseAvailable && checkVIPAccess) {
       app.use(checkVIPAccess);

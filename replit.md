@@ -81,3 +81,13 @@ Preferred communication style: Simple, everyday language.
 ## Deployment
 -   **Vercel** - Production-ready with serverless function handler in `api/index.js`.
 -   **Node.js >= 18.0.0**
+
+## Vercel Deployment Configuration (Recent Fixes - Dec 2024)
+-   **vercel.json**: Uses `routes` configuration for proper routing of static files, API endpoints, and root path. Static files served from `/public` directory.
+-   **Environment Variables**: Supports both `DATABASE_URL` (connection string) and `PG*` env vars (`PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGPORT`).
+-   **Required Env Vars for Vercel**:
+    - `JWT_SECRET` (required for authentication)
+    - Database config: Either `DATABASE_URL` OR `PGHOST`+`PGDATABASE` (+ optional `PGUSER`, `PGPASSWORD`, `PGPORT`)
+-   **Graceful Degradation**: App runs in limited mode without database, returning 503 for database-dependent endpoints (/auth, /admin, /api/endpoints).
+-   **Serverless Optimizations**: Connection pool optimized for serverless (max:1, min:0, idle:0), SSL required for Vercel Postgres.
+-   **SSE Disabled**: Server-Sent Events routes disabled in serverless mode due to Vercel's stateless architecture.

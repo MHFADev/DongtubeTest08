@@ -12,14 +12,24 @@ const { Client } = pg;
 
 // ==================== CRITICAL: Environment Validation ====================
 // Validate BEFORE any imports that might use these variables
-const REQUIRED_ENV_VARS = ['JWT_SECRET', 'DATABASE_URL'];
+const REQUIRED_ENV_VARS = ['JWT_SECRET'];
 const missingVars = REQUIRED_ENV_VARS.filter(varName => !process.env[varName]);
+
+// Check for database config (either DATABASE_URL or PG* env vars)
+const hasDatabaseConfig = (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') ||
+                          (process.env.PGHOST && process.env.PGDATABASE);
 
 if (missingVars.length > 0) {
   console.error('❌ CRITICAL ERROR: Missing required environment variables:', missingVars.join(', '));
   console.error('📝 Please set these variables in Vercel Project Settings → Environment Variables');
   console.error('🔗 Visit: https://vercel.com/docs/environment-variables');
   // Don't exit in serverless, just log and continue with degraded mode
+}
+
+if (!hasDatabaseConfig) {
+  console.warn('⚠️ WARNING: No database configuration detected.');
+  console.warn('   Please set DATABASE_URL or PGHOST/PGDATABASE in Environment Variables.');
+  console.warn('   API will run in degraded mode without database features.');
 }
 
 // ==================== Safe Imports with Error Handling ====================
@@ -290,12 +300,18 @@ async function initializeApp() {
       throw new Error('JWT_SECRET is required but not set. Please configure it in Vercel Environment Variables.');
     }
     
-    if (!process.env.DATABASE_URL) {
-      console.warn('⚠️ DATABASE_URL not set. Some features may not work.');
+    // Check for any valid database configuration (DATABASE_URL or PG* env vars)
+    const hasDatabaseUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '';
+    const hasPgEnvVars = process.env.PGHOST && process.env.PGDATABASE;
+    const hasAnyDbConfig = hasDatabaseUrl || hasPgEnvVars;
+    
+    if (!hasAnyDbConfig) {
+      console.warn('⚠️ No database configuration found. Please set DATABASE_URL or PG* environment variables.');
+      console.warn('   Some features may not work without database.');
     }
     
-    // Initialize database with retry logic
-    if (process.env.DATABASE_URL) {
+    // Initialize database with retry logic if ANY database config is available
+    if (hasAnyDbConfig) {
       try {
         await initializeDatabaseWithRetry(3);
       } catch (dbError) {

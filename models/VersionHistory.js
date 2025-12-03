@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const VersionHistory = sequelize.define('VersionHistory', {
+let VersionHistory = null;
+
+if (sequelize) {
+  VersionHistory = sequelize.define('VersionHistory', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -34,5 +37,8 @@ const VersionHistory = sequelize.define('VersionHistory', {
   timestamps: true,
   updatedAt: false
 });
+} else {
+  console.warn('⚠️ VersionHistory model not initialized: Database connection unavailable');
+}
 
 export default VersionHistory;

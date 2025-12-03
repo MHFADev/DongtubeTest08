@@ -1,26 +1,30 @@
-import sequelize from '../../config/database.js';
+import sequelize, { isDatabaseConfigured } from '../../config/database.js';
 import ApiEndpoint from './ApiEndpoint.js';
 import EndpointCategory from './EndpointCategory.js';
 import EndpointUsageStats from './EndpointUsageStats.js';
 
-// Define relationships
-ApiEndpoint.hasMany(EndpointUsageStats, {
-  foreignKey: 'endpoint_id',
-  as: 'usageStats',
-  onDelete: 'CASCADE'
-});
+if (sequelize) {
+  ApiEndpoint.hasMany(EndpointUsageStats, {
+    foreignKey: 'endpoint_id',
+    as: 'usageStats',
+    onDelete: 'CASCADE'
+  });
 
-EndpointUsageStats.belongsTo(ApiEndpoint, {
-  foreignKey: 'endpoint_id',
-  as: 'endpoint'
-});
+  EndpointUsageStats.belongsTo(ApiEndpoint, {
+    foreignKey: 'endpoint_id',
+    as: 'endpoint'
+  });
+}
 
-// Initialize endpoint tables (now in main database)
 const initEndpointDatabase = async () => {
+  if (!isDatabaseConfigured() || !sequelize) {
+    console.warn('⚠️ Cannot initialize endpoint tables: Database not configured');
+    return false;
+  }
+  
   try {
     console.log('📊 Syncing endpoint tables (in primary database)...');
     
-    // Sync tables in order
     await EndpointCategory.sync();
     console.log('  ✓ EndpointCategory table synced');
     

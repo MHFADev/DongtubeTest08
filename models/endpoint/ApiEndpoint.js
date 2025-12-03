@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../../config/database.js';
 
-const ApiEndpoint = sequelize.define('ApiEndpoint', {
+let ApiEndpoint = null;
+
+if (sequelize) {
+  ApiEndpoint = sequelize.define('ApiEndpoint', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -129,5 +132,8 @@ const ApiEndpoint = sequelize.define('ApiEndpoint', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ ApiEndpoint model not initialized: Database connection unavailable');
+}
 
 export default ApiEndpoint;

@@ -9,36 +9,129 @@
       "includeFiles": "models/**,routes/**,services/**,middleware/**,utils/**,config/**,public/**,asset/**,package.json"
     }
   },
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "/api/index" },
-    { "source": "/auth/:path*", "destination": "/api/index" },
-    { "source": "/admin/:path*", "destination": "/api/index" },
-    { "source": "/random/:path*", "destination": "/api/index" },
-    { "source": "/maker/:path*", "destination": "/api/index" },
-    { "source": "/ai/:path*", "destination": "/api/index" },
-    { "source": "/sse/:path*", "destination": "/api/index" },
-    { "source": "/debug/:path*", "destination": "/api/index" },
-    { "source": "/health", "destination": "/api/index" },
-    { "source": "/health/:path*", "destination": "/api/index" },
-    { "source": "/docs", "destination": "/api/index" }
+  "routes": [
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
+    {
+      "src": "/logo.jpg",
+      "dest": "/public/logo.jpg"
+    },
+    {
+      "src": "/style.css",
+      "dest": "/public/style.css"
+    },
+    {
+      "src": "/script.js",
+      "dest": "/public/script.js"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/asset/(.*)",
+      "dest": "/asset/$1"
+    },
+    {
+      "src": "/login.html",
+      "dest": "/public/login.html"
+    },
+    {
+      "src": "/signup.html",
+      "dest": "/public/signup.html"
+    },
+    {
+      "src": "/admin-panel.html",
+      "dest": "/public/admin-panel.html"
+    },
+    {
+      "src": "/admin-users.html",
+      "dest": "/public/admin-users.html"
+    },
+    {
+      "src": "/admin-tools.html",
+      "dest": "/public/admin-tools.html"
+    },
+    {
+      "src": "/download-tiktok.html",
+      "dest": "/public/download-tiktok.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/admin/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/random/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/maker/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/ai/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/sse/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/debug/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/health",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/health/(.*)",
+      "dest": "/api/index"
+    },
+    {
+      "src": "/docs",
+      "dest": "/api/index"
+    },
+    {
+      "src": "^/$",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index"
+    }
   ],
   "headers": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
+        { "key": "Access-Control-Max-Age", "value": "86400" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     },
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
     }
-  ],
-  "trailingSlash": false,
-  "cleanUrls": true
+  ]
 }

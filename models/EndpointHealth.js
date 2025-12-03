@@ -5,7 +5,10 @@ import sequelize from '../config/database.js';
  * EndpointHealth Model - Health status tracking
  * @description Monitors and tracks health status of API endpoints
  */
-const EndpointHealth = sequelize.define('EndpointHealth', {
+let EndpointHealth = null;
+
+if (sequelize) {
+  EndpointHealth = sequelize.define('EndpointHealth', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -164,5 +167,8 @@ const EndpointHealth = sequelize.define('EndpointHealth', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ EndpointHealth model not initialized: Database connection unavailable');
+}
 
 export default EndpointHealth;

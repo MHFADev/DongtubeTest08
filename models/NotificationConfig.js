@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const NotificationConfig = sequelize.define('NotificationConfig', {
+let NotificationConfig = null;
+
+if (sequelize) {
+  NotificationConfig = sequelize.define('NotificationConfig', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -53,5 +56,8 @@ const NotificationConfig = sequelize.define('NotificationConfig', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ NotificationConfig model not initialized: Database connection unavailable');
+}
 
 export default NotificationConfig;

@@ -5,7 +5,10 @@ import sequelize from '../config/database.js';
  * PerformanceMetric Model - Aggregated performance metrics
  * @description Stores pre-aggregated performance statistics for fast querying
  */
-const PerformanceMetric = sequelize.define('PerformanceMetric', {
+let PerformanceMetric = null;
+
+if (sequelize) {
+  PerformanceMetric = sequelize.define('PerformanceMetric', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -164,5 +167,8 @@ const PerformanceMetric = sequelize.define('PerformanceMetric', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ PerformanceMetric model not initialized: Database connection unavailable');
+}
 
 export default PerformanceMetric;

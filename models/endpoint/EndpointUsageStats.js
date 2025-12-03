@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../../config/database.js';
 
-const EndpointUsageStats = sequelize.define('EndpointUsageStats', {
+let EndpointUsageStats = null;
+
+if (sequelize) {
+  EndpointUsageStats = sequelize.define('EndpointUsageStats', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -73,5 +76,8 @@ const EndpointUsageStats = sequelize.define('EndpointUsageStats', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ EndpointUsageStats model not initialized: Database connection unavailable');
+}
 
 export default EndpointUsageStats;

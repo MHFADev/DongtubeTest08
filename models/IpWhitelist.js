@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const IpWhitelist = sequelize.define('IpWhitelist', {
+let IpWhitelist = null;
+
+if (sequelize) {
+  IpWhitelist = sequelize.define('IpWhitelist', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -30,5 +33,8 @@ const IpWhitelist = sequelize.define('IpWhitelist', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ IpWhitelist model not initialized: Database connection unavailable');
+}
 
 export default IpWhitelist;

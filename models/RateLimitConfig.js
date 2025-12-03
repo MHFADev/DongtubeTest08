@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const RateLimitConfig = sequelize.define('RateLimitConfig', {
+let RateLimitConfig = null;
+
+if (sequelize) {
+  RateLimitConfig = sequelize.define('RateLimitConfig', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -50,5 +53,8 @@ const RateLimitConfig = sequelize.define('RateLimitConfig', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ RateLimitConfig model not initialized: Database connection unavailable');
+}
 
 export default RateLimitConfig;

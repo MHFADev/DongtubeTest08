@@ -5,7 +5,10 @@ import sequelize from '../config/database.js';
  * AnomalyAlert Model - Detected anomalies and alerts
  * @description Stores anomaly detection results and alerts for monitoring
  */
-const AnomalyAlert = sequelize.define('AnomalyAlert', {
+let AnomalyAlert = null;
+
+if (sequelize) {
+  AnomalyAlert = sequelize.define('AnomalyAlert', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -138,5 +141,8 @@ const AnomalyAlert = sequelize.define('AnomalyAlert', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ AnomalyAlert model not initialized: Database connection unavailable');
+}
 
 export default AnomalyAlert;

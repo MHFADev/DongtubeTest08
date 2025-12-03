@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../../config/database.js';
 
-const EndpointCategory = sequelize.define('EndpointCategory', {
+let EndpointCategory = null;
+
+if (sequelize) {
+  EndpointCategory = sequelize.define('EndpointCategory', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -53,5 +56,8 @@ const EndpointCategory = sequelize.define('EndpointCategory', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ EndpointCategory model not initialized: Database connection unavailable');
+}
 
 export default EndpointCategory;

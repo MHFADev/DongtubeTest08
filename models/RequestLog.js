@@ -5,7 +5,10 @@ import sequelize from '../config/database.js';
  * RequestLog Model - Tracks all API requests
  * @description Records detailed information about each API request for analytics and monitoring
  */
-const RequestLog = sequelize.define('RequestLog', {
+let RequestLog = null;
+
+if (sequelize) {
+  RequestLog = sequelize.define('RequestLog', {
   id: {
     type: DataTypes.BIGINT,
     primaryKey: true,
@@ -128,5 +131,8 @@ const RequestLog = sequelize.define('RequestLog', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ RequestLog model not initialized: Database connection unavailable');
+}
 
 export default RequestLog;

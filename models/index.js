@@ -1,4 +1,4 @@
-import sequelize from '../config/database.js';
+import sequelize, { isDatabaseConfigured, getDatabaseError } from '../config/database.js';
 import User from './User.js';
 import VersionHistory from './VersionHistory.js';
 import ActivityLog from './ActivityLog.js';
@@ -13,7 +13,18 @@ import { ApiEndpoint, EndpointCategory, EndpointUsageStats, initEndpointDatabase
 import crypto from 'crypto';
 
 const initDatabase = async () => {
+  if (!isDatabaseConfigured() || !sequelize) {
+    const dbError = getDatabaseError();
+    console.warn('⚠️ Database not configured. Running in degraded mode.');
+    if (dbError) {
+      console.warn('   Error:', dbError.message);
+    }
+    console.warn('   Please set DATABASE_URL or PG* environment variables in Vercel.');
+    return false;
+  }
+  
   try {
+    console.log('🔄 Authenticating database connection...');
     await sequelize.authenticate();
     console.log('✓ Database connected');
     
@@ -40,8 +51,6 @@ const initDatabase = async () => {
     await EndpointHealth.sync();
     console.log('  ✓ EndpointHealth table synced');
     
-    // Note: Endpoint tables (ApiEndpoint, EndpointCategory, EndpointUsageStats) 
-    // are synced separately via initEndpointDatabase() in server.js
     console.log('✓ All database tables synced (including analytics tables)');
     
     const adminExists = await User.findOne({ where: { role: 'admin' } });
@@ -67,6 +76,9 @@ const initDatabase = async () => {
     return true;
   } catch (error) {
     console.error('✗ Database error:', error.message);
+    if (error.original) {
+      console.error('  Original error:', error.original.message);
+    }
     return false;
   }
 };

@@ -1,7 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const ActivityLog = sequelize.define('ActivityLog', {
+let ActivityLog = null;
+
+if (sequelize) {
+  ActivityLog = sequelize.define('ActivityLog', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -56,5 +59,8 @@ const ActivityLog = sequelize.define('ActivityLog', {
     }
   ]
 });
+} else {
+  console.warn('⚠️ ActivityLog model not initialized: Database connection unavailable');
+}
 
 export default ActivityLog;

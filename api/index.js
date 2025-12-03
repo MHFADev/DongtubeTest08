@@ -115,38 +115,70 @@ let routeManager, endpointSyncService;
 let cachedRouteMetadata = null;
 
 async function loadRoutesMetadataOnce() {
-  if (cachedRouteMetadata) {
+  if (cachedRouteMetadata && cachedRouteMetadata.length > 0) {
+    console.log(`📦 Using cached metadata: ${cachedRouteMetadata.length} endpoints`);
     return cachedRouteMetadata;
   }
   
   const endpoints = [];
   
   try {
-    const { readdirSync } = await import('fs');
+    console.log(`📂 Loading route metadata from: ${routesPath}`);
+    const { readdirSync, existsSync } = await import('fs');
+    
+    if (!existsSync(routesPath)) {
+      console.error(`❌ Routes path does not exist: ${routesPath}`);
+      return endpoints;
+    }
+    
     const routeFiles = readdirSync(routesPath).filter(file => file.endsWith('.js'));
+    console.log(`📄 Found ${routeFiles.length} route files`);
+    
+    const skipFiles = ['admin.js', 'auth.js', 'sse.js', 'endpoints.js', 'admin-endpoints.js', 'endpoints-from-routes.js', 'admin-tools.js'];
     
     for (const file of routeFiles) {
-      if (file === 'admin.js' || file === 'auth.js' || file === 'sse.js') {
+      if (skipFiles.includes(file)) {
         continue;
       }
       
       try {
         const routePath = path.join(routesPath, file);
-        const route = await import(pathToFileURL(routePath).href);
+        const routeUrl = pathToFileURL(routePath).href;
+        console.log(`  🔍 Loading: ${file}`);
+        
+        const route = await import(routeUrl);
         
         if (route.metadata) {
           const metadata = Array.isArray(route.metadata) ? route.metadata : [route.metadata];
-          endpoints.push(...metadata);
+          
+          // Normalize metadata - handle comma-separated methods
+          for (const meta of metadata) {
+            if (meta.method && meta.method.includes(',')) {
+              const methods = meta.method.split(',').map(m => m.trim());
+              for (const method of methods) {
+                endpoints.push({
+                  ...meta,
+                  method: method
+                });
+              }
+            } else {
+              endpoints.push(meta);
+            }
+          }
+          console.log(`    ✓ Loaded ${metadata.length} metadata from ${file}`);
+        } else {
+          console.log(`    ℹ️ No metadata in ${file}`);
         }
       } catch (error) {
-        console.error(`⚠️ Failed to load ${file}:`, error.message);
+        console.error(`  ⚠️ Failed to load ${file}:`, error.message);
       }
     }
     
     cachedRouteMetadata = endpoints;
-    console.log(`✅ Loaded ${endpoints.length} route metadata entries (cached)`);
+    console.log(`✅ Total loaded: ${endpoints.length} endpoint metadata entries`);
   } catch (error) {
-    console.error('⚠️ Failed to load route metadata:', error.message);
+    console.error('❌ Failed to load route metadata:', error.message);
+    console.error('Stack:', error.stack);
   }
   
   return endpoints;
@@ -548,14 +580,31 @@ async function initializeApp() {
       }
       
       // Fallback to route manager or static loader
-      const allEndpoints = routeManager ? routeManager.getAllEndpoints() : await loadRoutesMetadataOnce();
+      console.log('📂 Falling back to route metadata loader...');
+      console.log(`  RouteManager available: ${!!routeManager}`);
+      console.log(`  Is serverless: ${isServerless}`);
+      
+      let allEndpoints = [];
+      
+      if (routeManager) {
+        allEndpoints = routeManager.getAllEndpoints();
+        console.log(`  📦 Loaded ${allEndpoints.length} from RouteManager`);
+      } else {
+        console.log('  🔄 Using loadRoutesMetadataOnce...');
+        allEndpoints = await loadRoutesMetadataOnce();
+        console.log(`  📦 Loaded ${allEndpoints.length} from route files`);
+      }
+      
+      if (allEndpoints.length === 0) {
+        console.warn('⚠️ No endpoints loaded from any source!');
+      }
       
       const sanitizedEndpoints = allEndpoints.map(ep => ({
         path: ep.path,
         method: ep.method,
         name: ep.name,
         description: ep.description || ep.name,
-        category: ep.category,
+        category: ep.category || 'other',
         requiresVIP: false,
         params: hasPremiumAccess ? (ep.params || ep.parameters || []) : [],
         parameters: hasPremiumAccess ? (ep.parameters || ep.params || []) : [],
@@ -568,7 +617,8 @@ async function initializeApp() {
         total: sanitizedEndpoints.length,
         endpoints: sanitizedEndpoints,
         fallback: true,
-        note: "Loaded from route files (database unavailable)"
+        note: "Loaded from route files (database unavailable)",
+        environment: isServerless ? "serverless" : "standard"
       });
     });
 

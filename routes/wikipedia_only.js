@@ -1,7 +1,6 @@
 import { Router } from "express";
-import axios from "axios";
 import * as cheerio from "cheerio";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 import HTTPClient from "../utils/HTTPClient.js";
 
 const router = Router();
@@ -63,7 +62,6 @@ async function scrapeWikipedia(url) {
 }
 
 async function searchAndScrapeWikipedia(query, lang = "id") {
-  // Search Wikipedia using API
   const searchUrl = `https://${lang}.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&format=json`;
   const data = await httpClient.get(searchUrl);
   
@@ -77,7 +75,6 @@ async function searchAndScrapeWikipedia(query, lang = "id") {
     url: data[3][0]
   };
   
-  // Scrape the first result
   const scraped = await scrapeWikipedia(firstResult.url);
   
   return {
@@ -86,25 +83,8 @@ async function searchAndScrapeWikipedia(query, lang = "id") {
   };
 }
 
-// Combined search and scrape endpoint
-router.get("/api/wikipedia", asyncHandler(async (req, res) => {
-  const { query, lang = "id" } = req.query;
-  
-  if (!validate.notEmpty(query)) {
-    return res.status(200).json({ 
-      success: false, 
-      error: "Query is required",
-      errorType: "ValidationError",
-      hint: "Please provide a search query"
-    });
-  }
-  
-  const result = await searchAndScrapeWikipedia(query, lang);
-  res.json({ success: true, data: result });
-}));
-
-router.post("/api/wikipedia", asyncHandler(async (req, res) => {
-  const { query, lang = "id" } = req.body;
+router.all("/api/wikipedia", unifiedHandler(async (params, req, res) => {
+  const { query, lang = "id" } = params;
   
   if (!validate.notEmpty(query)) {
     return res.status(200).json({ 

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
@@ -36,24 +36,8 @@ async function downloadSnackvideo(url) {
   }
 }
 
-router.get("/api/snackvideo/download", asyncHandler(async (req, res) => {
-  const { url } = req.query;
-  
-  if (!validate.url(url, "snackvideo.com")) {
-    return res.status(200).json({ 
-      success: false, 
-      error: "Invalid Snackvideo URL",
-      errorType: "ValidationError",
-      hint: "Please provide a valid Snackvideo URL"
-    });
-  }
-  
-  const result = await downloadSnackvideo(url);
-  res.json({ success: true, data: result });
-}));
-
-router.post("/api/snackvideo/download", asyncHandler(async (req, res) => {
-  const { url } = req.body;
+router.all("/api/snackvideo/download", unifiedHandler(async (params, req, res) => {
+  const { url } = params;
   
   if (!validate.url(url, "snackvideo.com")) {
     return res.status(200).json({ 

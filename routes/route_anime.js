@@ -1,10 +1,9 @@
 import { Router } from "express";
 import axios from "axios";
-import { asyncHandler } from "../utils/validation.js";
+import { unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
-// Random Neko Image
 async function getRandomNekoImage() {
   const { data } = await axios.get("https://api.waifu.pics/sfw/neko", {
     timeout: 30000,
@@ -25,25 +24,6 @@ async function getRandomNekoImage() {
   };
 }
 
-router.get("/api/r/neko", asyncHandler(async (req, res) => {
-  const { buffer, contentType } = await getRandomNekoImage();
-  
-  res.setHeader("Content-Type", contentType);
-  res.setHeader("Cache-Control", "public, max-age=3600");
-  res.setHeader("Content-Disposition", `inline; filename="neko_${Date.now()}.${contentType.split("/")[1]}"`);
-  res.end(buffer);
-}));
-
-router.post("/api/r/neko", asyncHandler(async (req, res) => {
-  const { buffer, contentType } = await getRandomNekoImage();
-  
-  res.setHeader("Content-Type", contentType);
-  res.setHeader("Cache-Control", "public, max-age=3600");
-  res.setHeader("Content-Disposition", `inline; filename="neko_${Date.now()}.${contentType.split("/")[1]}"`);
-  res.end(buffer);
-}));
-
-// Random Waifu Image
 async function getRandomWaifuImage() {
   const { data } = await axios.get("https://api.waifu.pics/sfw/waifu", {
     timeout: 30000,
@@ -61,17 +41,16 @@ async function getRandomWaifuImage() {
   return Buffer.from(response.data);
 }
 
-router.get("/api/r/waifu", asyncHandler(async (req, res) => {
-  const imageBuffer = await getRandomWaifuImage();
+router.all("/api/r/neko", unifiedHandler(async (params, req, res) => {
+  const { buffer, contentType } = await getRandomNekoImage();
   
-  res.setHeader("Content-Type", "image/jpeg");
-  res.setHeader("Content-Length", imageBuffer.length);
+  res.setHeader("Content-Type", contentType);
   res.setHeader("Cache-Control", "public, max-age=3600");
-  res.setHeader("Content-Disposition", `inline; filename="waifu_${Date.now()}.jpg"`);
-  res.end(imageBuffer);
+  res.setHeader("Content-Disposition", `inline; filename="neko_${Date.now()}.${contentType.split("/")[1]}"`);
+  res.end(buffer);
 }));
 
-router.post("/api/r/waifu", asyncHandler(async (req, res) => {
+router.all("/api/r/waifu", unifiedHandler(async (params, req, res) => {
   const imageBuffer = await getRandomWaifuImage();
   
   res.setHeader("Content-Type", "image/jpeg");

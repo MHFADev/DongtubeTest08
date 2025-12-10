@@ -2,7 +2,7 @@ import { Router } from "express";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import HTTPClient from "../utils/HTTPClient.js";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
@@ -65,21 +65,15 @@ class Ideogram {
 
 const ideogram = new Ideogram();
 
-router.get("/api/ideogram/generate", asyncHandler(async (req, res) => {
-  const result = await ideogram.generate(req.query.prompt, {
-    aspect_ratio: req.query.aspect_ratio,
-    magic_prompt_option: req.query.magic_prompt_option,
-    negative_prompt: req.query.negative_prompt
+router.all("/api/ideogram/generate", unifiedHandler(async (params, req, res) => {
+  const { prompt, aspect_ratio, magic_prompt_option, negative_prompt } = params;
+  
+  const result = await ideogram.generate(prompt, {
+    aspect_ratio,
+    magic_prompt_option,
+    negative_prompt
   });
-  res.json({ success: true, data: result });
-}));
-
-router.post("/api/ideogram/generate", asyncHandler(async (req, res) => {
-  const result = await ideogram.generate(req.body.prompt, {
-    aspect_ratio: req.body.aspect_ratio,
-    magic_prompt_option: req.body.magic_prompt_option,
-    negative_prompt: req.body.negative_prompt
-  });
+  
   res.json({ success: true, data: result });
 }));
 

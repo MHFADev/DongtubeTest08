@@ -1,7 +1,7 @@
 import { Router } from "express";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
@@ -33,20 +33,16 @@ async function downloadInstagram(url) {
   };
 }
 
-router.get("/api/instagram/download", asyncHandler(async (req, res) => {
-  const { url } = req.query;
-  if (!validate.url(url, "instagram.com")) {
-    return res.status(200).json({ success: false, error: "Invalid Instagram URL", errorType: "ValidationError", hint: "Please provide a valid Instagram post URL" });
-  }
+router.all("/api/instagram/download", unifiedHandler(async (params, req, res) => {
+  const { url } = params;
   
-  const result = await downloadInstagram(url);
-  res.json({ success: true, data: result });
-}));
-
-router.post("/api/instagram/download", asyncHandler(async (req, res) => {
-  const { url } = req.body;
   if (!validate.url(url, "instagram.com")) {
-    return res.status(200).json({ success: false, error: "Invalid Instagram URL", errorType: "ValidationError", hint: "Please provide a valid Instagram post URL" });
+    return res.status(200).json({ 
+      success: false, 
+      error: "Invalid Instagram URL", 
+      errorType: "ValidationError", 
+      hint: "Please provide a valid Instagram post URL" 
+    });
   }
   
   const result = await downloadInstagram(url);

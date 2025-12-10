@@ -1,6 +1,6 @@
 import { Router } from "express";
 import axios from "axios";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
@@ -54,15 +54,16 @@ class TikTokSearch {
 
 const tiktokSearch = new TikTokSearch();
 
-router.get("/api/tiktok/search", asyncHandler(async (req, res) => {
-  const { q, count = 15 } = req.query;
+router.all("/api/tiktok/search", unifiedHandler(async (params, req, res) => {
+  const { q, query, count = 15 } = params;
+  const searchQuery = q || query;
   
-  if (!validate.notEmpty(q)) {
+  if (!validate.notEmpty(searchQuery)) {
     return res.status(200).json({
       success: false,
       error: "Query is required",
       errorType: "ValidationError",
-      hint: "Please provide a search query"
+      hint: "Please provide a search query (use 'q' for GET or 'query' for POST)"
     });
   }
   
@@ -74,39 +75,10 @@ router.get("/api/tiktok/search", asyncHandler(async (req, res) => {
     });
   }
   
-  const result = await tiktokSearch.search(q, parseInt(count));
+  const result = await tiktokSearch.search(searchQuery, parseInt(count));
   res.json({
     success: true,
-    query: q,
-    count: result.length,
-    data: result
-  });
-}));
-
-router.post("/api/tiktok/search", asyncHandler(async (req, res) => {
-  const { query, count = 15 } = req.body;
-  
-  if (!validate.notEmpty(query)) {
-    return res.status(200).json({
-      success: false,
-      error: "Query is required",
-      errorType: "ValidationError",
-      hint: "Please provide a search query"
-    });
-  }
-  
-  if (!validate.number(count, 1, 50)) {
-    return res.status(200).json({
-      success: false,
-      error: "Count must be between 1 and 50",
-      errorType: "ValidationError"
-    });
-  }
-  
-  const result = await tiktokSearch.search(query, parseInt(count));
-  res.json({
-    success: true,
-    query,
+    query: searchQuery,
     count: result.length,
     data: result
   });

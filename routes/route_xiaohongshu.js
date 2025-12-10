@@ -1,6 +1,6 @@
 import { Router } from "express";
 import axios from "axios";
-import { validate, asyncHandler } from "../utils/validation.js";
+import { validate, unifiedHandler } from "../utils/validation.js";
 
 const router = Router();
 
@@ -37,8 +37,8 @@ class Xiaohongshu {
 
 const xhs = new Xiaohongshu();
 
-router.get("/api/xiaohongshu/download", asyncHandler(async (req, res) => {
-  const { url } = req.query;
+router.all("/api/xiaohongshu/download", unifiedHandler(async (params, req, res) => {
+  const { url } = params;
   
   if (!validate.url(url)) {
     return res.status(200).json({
@@ -50,29 +50,7 @@ router.get("/api/xiaohongshu/download", asyncHandler(async (req, res) => {
   }
   
   const result = await xhs.download({ url: url.trim() });
-  res.json({
-    success: true,
-    data: result
-  });
-}));
-
-router.post("/api/xiaohongshu/download", asyncHandler(async (req, res) => {
-  const { url } = req.body;
-  
-  if (!validate.url(url)) {
-    return res.status(200).json({
-      success: false,
-      error: "Valid Xiaohongshu URL is required",
-      errorType: "ValidationError",
-      hint: "Please provide a valid Xiaohongshu post URL"
-    });
-  }
-  
-  const result = await xhs.download({ url: url.trim() });
-  res.json({
-    success: true,
-    data: result
-  });
+  res.json({ success: true, data: result });
 }));
 
 export const metadata = {

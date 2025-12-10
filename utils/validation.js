@@ -316,4 +316,92 @@ export const getParam = (source, key, defaultValue = null) => {
   return value;
 };
 
-export default { validate, asyncHandler, ValidationError, validateRequest, sendResult, normalizeParams, getParam };
+/**
+ * Unified Method Handler - Combines GET and POST handling with switch-case logic
+ * Extracts parameters from req.query (GET) or req.body (POST) automatically
+ * 
+ * @param {Function} handler - Async handler function(params, req, res)
+ * @param {Object} options - Optional configuration
+ * @returns {Function} Express middleware
+ * 
+ * @example
+ * router.all('/api/endpoint', unifiedHandler(async (params, req, res) => {
+ *   const { url } = params;
+ *   const result = await someOperation(url);
+ *   res.json({ success: true, data: result });
+ * }));
+ */
+export const unifiedHandler = (handler, options = {}) => {
+  const { allowedMethods = ['GET', 'POST'] } = options;
+  
+  return asyncHandler(async (req, res, next) => {
+    const method = req.method.toUpperCase();
+    
+    // Method validation
+    if (!allowedMethods.includes(method)) {
+      return res.status(200).json({
+        success: false,
+        error: `Method ${method} not allowed. Use: ${allowedMethods.join(', ')}`,
+        errorType: 'MethodNotAllowed'
+      });
+    }
+    
+    // Unified parameter extraction based on method
+    let params;
+    switch (method) {
+      case 'GET':
+        params = { ...req.query };
+        break;
+      case 'POST':
+      case 'PUT':
+      case 'PATCH':
+        params = { ...req.body };
+        break;
+      case 'DELETE':
+        params = { ...req.query, ...req.body };
+        break;
+      default:
+        params = { ...req.query, ...req.body };
+    }
+    
+    // Execute the handler with unified params
+    return handler(params, req, res, next);
+  });
+};
+
+/**
+ * Create unified route handler with validation
+ * Combines parameter extraction and validation in one step
+ * 
+ * @param {Object} validationRules - Validation rules for params
+ * @param {Function} handler - Async handler function(params, req, res)
+ * @returns {Function} Express middleware
+ * 
+ * @example
+ * router.all('/api/download', unifiedValidatedHandler(
+ *   { url: { required: true, type: 'url', domain: 'facebook.com' } },
+ *   async (params, req, res) => {
+ *     const result = await download(params.url);
+ *     res.json({ success: true, data: result });
+ *   }
+ * ));
+ */
+export const unifiedValidatedHandler = (validationRules, handler) => {
+  return unifiedHandler(async (params, req, res, next) => {
+    // Validate params
+    const result = validate.fields(params, validationRules);
+    
+    if (!result.valid) {
+      return res.status(200).json({
+        success: false,
+        error: result.errors[0], // Return first error for simplicity
+        errorType: 'ValidationError',
+        details: result.errors
+      });
+    }
+    
+    return handler(params, req, res, next);
+  });
+};
+
+export default { validate, asyncHandler, ValidationError, validateRequest, sendResult, normalizeParams, getParam, unifiedHandler, unifiedValidatedHandler };

@@ -109,3 +109,17 @@ Preferred communication style: Simple, everyday language.
 -   Connection pool: max 1, min 0, idle 0
 -   SSL required for Neon/Supabase/Vercel Postgres
 -   SSE routes disabled (stateless architecture)
+
+# Recent Changes (Dec 2025)
+
+## Unified Method Handling Refactor
+-   **Pattern**: Routes now use `router.all()` with `unifiedHandler()` wrapper instead of separate `router.get()` and `router.post()` handlers
+-   **Benefits**: Eliminates code duplication, consistent parameter extraction, and centralized error handling
+-   **Implementation**: `unifiedHandler()` in `utils/validation.js` extracts params from `req.query` (GET) or `req.body` (POST) automatically
+-   **Refactored Routes**: primbon.js, route_anime.js, route-facebook.js, route-instagram.js, route-ideogram.js, route-youtube.js, route_xiaohongshu.js, snackvideo_route.js, route_tiktok_search.js, wikipedia_only.js, route_story.js, route_maker.js, tools_route.js
+-   **Binary Endpoints**: Work correctly - routes handle Content-Type headers directly before calling `res.end(buffer)`
+
+## Database SSL Configuration
+-   **Railway Support**: Added detection for Railway environment variables (`railway.app`, `railway.internal`, `RAILWAY_ENVIRONMENT`)
+-   **SSL Bypass**: Configured `rejectUnauthorized: false` for Railway's self-signed certificates
+-   **Location**: `config/database.js`

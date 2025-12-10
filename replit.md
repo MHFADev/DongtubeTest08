@@ -82,12 +82,30 @@ Preferred communication style: Simple, everyday language.
 -   **Vercel** - Production-ready with serverless function handler in `api/index.js`.
 -   **Node.js >= 18.0.0**
 
-## Vercel Deployment Configuration (Recent Fixes - Dec 2024)
--   **vercel.json**: Uses `routes` configuration for proper routing of static files, API endpoints, and root path. Static files served from `/public` directory.
--   **Environment Variables**: Supports both `DATABASE_URL` (connection string) and `PG*` env vars (`PGHOST`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`, `PGPORT`).
--   **Required Env Vars for Vercel**:
-    - `JWT_SECRET` (required for authentication)
-    - Database config: Either `DATABASE_URL` OR `PGHOST`+`PGDATABASE` (+ optional `PGUSER`, `PGPASSWORD`, `PGPORT`)
--   **Graceful Degradation**: App runs in limited mode without database, returning 503 for database-dependent endpoints (/auth, /admin, /api/endpoints).
--   **Serverless Optimizations**: Connection pool optimized for serverless (max:1, min:0, idle:0), SSL required for Vercel Postgres.
--   **SSE Disabled**: Server-Sent Events routes disabled in serverless mode due to Vercel's stateless architecture.
+## Vercel Deployment Configuration (Dec 2024 - Major Refactor)
+
+### vercel.json Configuration
+-   Uses `rewrites` for API routing: `/api/:path*`, `/auth/:path*`, `/admin/:path*`, `/random/:path*`, `/maker/:path*`, `/ai/:path*`, `/health`, `/debug/:path*` → `/api/index.js`
+-   Uses `routes` for static file serving from `/public` directory
+-   Comprehensive CORS headers applied to all API paths
+
+### api/index.js Serverless Handler
+-   **Unified Handlers**: All endpoints use `app.all()` pattern to handle GET, POST, PUT, DELETE in single functions
+-   **Fast Cold Start**: Database init uses 8s timeout per connection (16s max total) to fit within 55s Vercel limit
+-   **Non-Blocking Init**: Database failures don't prevent app startup - runs in degraded mode
+-   **Production CORS**: Allows requests from any origin with comprehensive headers
+-   **Detailed Error Handling**: All errors include error IDs, timestamps, and structured responses
+-   **Debug Endpoints**: `/debug/vercel`, `/debug/env`, `/debug/routes` for troubleshooting
+
+### Environment Variables
+-   **Required**: `JWT_SECRET` (auth will fail without it, but app starts in degraded mode)
+-   **Database**: Either `DATABASE_URL` OR `PGHOST`+`PGDATABASE` (+ optional `PGUSER`, `PGPASSWORD`, `PGPORT`)
+
+### Graceful Degradation
+-   App runs without database, returning 503 for database-dependent endpoints (`/auth/*`, `/admin/*`, `/api/endpoints`)
+-   Available endpoints without database: `/health`, `/api/version`, `/api/endpoints/from-routes`
+
+### Serverless Optimizations
+-   Connection pool: max 1, min 0, idle 0
+-   SSL required for Neon/Supabase/Vercel Postgres
+-   SSE routes disabled (stateless architecture)

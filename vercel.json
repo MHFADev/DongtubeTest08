@@ -9,6 +9,19 @@
       "includeFiles": "models/**,routes/**,services/**,middleware/**,utils/**,config/**,public/**,asset/**,package.json"
     }
   },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/auth/:path*", "destination": "/api/index.js" },
+    { "source": "/admin/:path*", "destination": "/api/index.js" },
+    { "source": "/random/:path*", "destination": "/api/index.js" },
+    { "source": "/maker/:path*", "destination": "/api/index.js" },
+    { "source": "/ai/:path*", "destination": "/api/index.js" },
+    { "source": "/sse/:path*", "destination": "/api/index.js" },
+    { "source": "/debug/:path*", "destination": "/api/index.js" },
+    { "source": "/health", "destination": "/api/index.js" },
+    { "source": "/health/:path*", "destination": "/api/index.js" },
+    { "source": "/docs", "destination": "/api/index.js" }
+  ],
   "routes": [
     {
       "src": "/favicon.ico",
@@ -63,56 +76,8 @@
       "dest": "/public/index.html"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/auth/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/admin/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/random/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/maker/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/ai/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/sse/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/debug/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/health",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/health/(.*)",
-      "dest": "/api/index"
-    },
-    {
-      "src": "/docs",
-      "dest": "/api/index"
-    },
-    {
       "src": "^/$",
       "dest": "/public/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index"
     }
   ],
   "headers": [
@@ -120,10 +85,21 @@
       "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
         { "key": "Access-Control-Max-Age", "value": "86400" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    },
+    {
+      "source": "/(auth|admin|random|maker|ai|health|debug)/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Max-Age", "value": "86400" }
       ]
     },
     {

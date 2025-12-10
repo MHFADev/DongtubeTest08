@@ -63,9 +63,14 @@ function createSequelizeInstance() {
     
     if (process.env.DATABASE_URL && process.env.DATABASE_URL.trim() !== '') {
       const DATABASE_URL = process.env.DATABASE_URL;
+      // Fix for Vercel/Railway self-signed certificate issue.
+      // Railway uses a public TCP proxy with self-signed certs, requiring SSL with rejectUnauthorized: false
       const sslRequired = DATABASE_URL.includes('sslmode=require') || 
                           DATABASE_URL.includes('neon.tech') || 
                           DATABASE_URL.includes('supabase') ||
+                          DATABASE_URL.includes('railway.app') ||
+                          DATABASE_URL.includes('railway.internal') ||
+                          process.env.RAILWAY_ENVIRONMENT ||
                           isServerless;
       
       const instance = new Sequelize(DATABASE_URL, {

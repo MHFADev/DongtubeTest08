@@ -24,7 +24,8 @@ class EndpointLoader {
     this.containerSelector = null;
     
     // Advanced sync features
-    this.version = 0; // Track data version
+    this.version = 0; // Track data version (client-side counter)
+    this.serverVersion = 0; // Track server-reported version for polling comparison
     this.pendingUpdates = new Map(); // Optimistic updates
     this.updateHistory = []; // Track update history
     this.lastSSEActivity = Date.now();
@@ -35,6 +36,10 @@ class EndpointLoader {
     this.broadcastChannel = null;
     this.connectionStatus = 'disconnected'; // disconnected, connecting, connected, degraded
     this.statusIndicator = null;
+    
+    // Serverless detection
+    this.sseSupported = true; // Will be checked on init
+    this.isServerless = false;
     
     // Initialize cross-tab sync
     this.initCrossTabSync();
@@ -158,11 +163,14 @@ class EndpointLoader {
   /**
    * Enable polling as fallback
    */
-  enablePolling() {
+  async enablePolling() {
     if (this.pollingEnabled) return;
     
     console.log('📊 Enabling polling fallback');
     this.pollingEnabled = true;
+    
+    // Initialize server version before starting polling
+    await this.fetchServerVersion();
     
     this.pollingInterval = setInterval(async () => {
       try {
@@ -193,14 +201,33 @@ class EndpointLoader {
       const response = await fetch('/api/endpoints/version');
       const data = await response.json();
       
-      if (data.success && data.version > this.version) {
-        console.log(`🔄 Polling detected update: v${this.version} -> v${data.version}`);
+      // Compare against server-reported version, not client counter
+      if (data.success && data.version > this.serverVersion) {
+        console.log(`🔄 Polling detected update: v${this.serverVersion} -> v${data.version}`);
+        this.serverVersion = data.version;
         await this.loadEndpoints(true);
         this.renderEndpoints();
         this.showNotification('Updates detected (polling)', 'info');
       }
     } catch (error) {
       console.error('Poll error:', error);
+    }
+  }
+
+  /**
+   * Fetch and store server version
+   */
+  async fetchServerVersion() {
+    try {
+      const response = await fetch('/api/endpoints/version');
+      const data = await response.json();
+      
+      if (data.success && data.version) {
+        this.serverVersion = data.version;
+        console.log(`📊 Server version initialized: ${this.serverVersion}`);
+      }
+    } catch (error) {
+      console.warn('Could not fetch server version:', error.message);
     }
   }
 
@@ -857,11 +884,43 @@ Endpoints Cached: ${this.endpoints.length}
   }
 
   /**
+   * Check if SSE is supported (serverless detection)
+   */
+  async checkSSESupport() {
+    try {
+      const response = await fetch('/api/sse/status');
+      const data = await response.json();
+      
+      this.sseSupported = data.sse_supported === true;
+      this.isServerless = data.serverless === true;
+      
+      console.log(`📡 SSE status: ${this.sseSupported ? 'supported' : 'not supported (serverless)'}`);
+      
+      return this.sseSupported;
+    } catch (error) {
+      console.warn('⚠️ Could not check SSE status, assuming not supported:', error.message);
+      this.sseSupported = false;
+      this.isServerless = true;
+      return false;
+    }
+  }
+
+  /**
    * Connect to real-time endpoint updates via SSE
    */
-  connectRealtimeUpdates() {
+  async connectRealtimeUpdates() {
     if (this.eventSource) {
       console.log('⚠️  SSE already connected');
+      return;
+    }
+
+    // Check if SSE is supported before connecting
+    const sseSupported = await this.checkSSESupport();
+    
+    if (!sseSupported) {
+      console.log('📊 SSE not supported in serverless environment, using polling fallback');
+      this.updateConnectionStatus('degraded');
+      this.enablePolling();
       return;
     }
 
@@ -1121,8 +1180,12 @@ if (document.readyState === 'loading') {
       await window.endpointLoader.loadCategories();
       console.log('✓ Endpoints loaded successfully');
       
-      // Connect to real-time updates
-      window.endpointLoader.connectRealtimeUpdates();
+      // Connect to real-time updates (async, handles errors internally)
+      window.endpointLoader.connectRealtimeUpdates().catch(error => {
+        console.warn('⚠️ Failed to connect to real-time updates:', error.message);
+        console.log('📊 Falling back to polling mode');
+        window.endpointLoader.enablePolling();
+      });
     } catch (error) {
       console.error('✗ Failed to auto-load endpoints:', error);
     }
@@ -1135,8 +1198,12 @@ if (document.readyState === 'loading') {
       await window.endpointLoader.loadCategories();
       console.log('✓ Endpoints loaded successfully');
       
-      // Connect to real-time updates
-      window.endpointLoader.connectRealtimeUpdates();
+      // Connect to real-time updates (async, handles errors internally)
+      window.endpointLoader.connectRealtimeUpdates().catch(error => {
+        console.warn('⚠️ Failed to connect to real-time updates:', error.message);
+        console.log('📊 Falling back to polling mode');
+        window.endpointLoader.enablePolling();
+      });
     } catch (error) {
       console.error('✗ Failed to auto-load endpoints:', error);
     }

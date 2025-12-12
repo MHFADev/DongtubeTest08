@@ -108,7 +108,20 @@ Preferred communication style: Simple, everyday language.
 ### Serverless Optimizations
 -   Connection pool: max 1, min 0, idle 0
 -   SSL required for Neon/Supabase/Vercel Postgres
--   SSE routes disabled (stateless architecture)
+-   SSE routes gracefully handled via fallback endpoints (see below)
+
+### SSE (Server-Sent Events) Handling
+-   **Problem**: SSE requires persistent connections, which are not supported in serverless environments (Vercel)
+-   **Solution**: Implemented smart SSE detection and fallback system
+-   **Backend**: 
+    -   Added `/api/sse/status` endpoint for frontend to check SSE availability
+    -   SSE fallback endpoints (`/sse/endpoint-updates`, `/sse/role-updates`) only mounted in serverless mode
+    -   Returns JSON response with `sse_supported: false` instead of 404 on Vercel
+-   **Frontend**:
+    -   `endpoint-loader.js` and `role-sync.js` check `/api/sse/status` before attempting SSE connection
+    -   If SSE not supported, automatically falls back to polling via `/api/endpoints/version`
+    -   Polling interval: 10 seconds
+-   **Local Development**: Full SSE support works normally with real-time updates
 
 # Recent Changes (Dec 2025)
 

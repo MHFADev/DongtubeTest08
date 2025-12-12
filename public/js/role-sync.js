@@ -10,6 +10,25 @@ class RoleSync {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 3000;
+    this.sseSupported = true;
+    this.isServerless = false;
+  }
+
+  async checkSSESupport() {
+    try {
+      const response = await fetch('/api/sse/status');
+      const data = await response.json();
+      
+      this.sseSupported = data.sse_supported === true;
+      this.isServerless = data.serverless === true;
+      
+      return this.sseSupported;
+    } catch (error) {
+      console.warn('⚠️ Could not check SSE status:', error.message);
+      this.sseSupported = false;
+      this.isServerless = true;
+      return false;
+    }
   }
 
   async connect() {
@@ -20,6 +39,15 @@ class RoleSync {
 
     if (!this.isAuthenticated()) {
       console.log('🔒 Skipping SSE connection - User not authenticated');
+      return;
+    }
+
+    // Check if SSE is supported
+    const sseSupported = await this.checkSSESupport();
+    
+    if (!sseSupported) {
+      console.log('📊 SSE not supported in serverless environment');
+      console.log('ℹ️  Role changes will be applied on next login or page refresh');
       return;
     }
 

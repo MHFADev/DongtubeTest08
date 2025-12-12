@@ -743,6 +743,52 @@ async function initializeApp() {
       await mountStaticRoutes();
     }
 
+    // ==================== SSE STATUS ENDPOINT (ALWAYS AVAILABLE) ====================
+    // Frontend can check this to determine if SSE is supported
+    app.all('/api/sse/status', (req, res) => {
+      res.json({
+        success: true,
+        sse_supported: !isServerless,
+        serverless: isServerless,
+        environment: process.env.VERCEL ? 'vercel' : 'local',
+        message: isServerless 
+          ? 'SSE not available - use polling fallback' 
+          : 'SSE available for real-time updates',
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // ==================== SSE FALLBACK ENDPOINTS (SERVERLESS ONLY) ====================
+    // Only mount SSE fallbacks in serverless environments to avoid intercepting real SSE traffic
+    if (isServerless) {
+      console.log('📡 Serverless mode: Mounting SSE fallback endpoints...');
+      
+      app.all('/sse/endpoint-updates', (req, res) => {
+        console.log('📡 SSE endpoint-updates requested (serverless mode)');
+        res.status(200).json({
+          success: false,
+          sse_supported: false,
+          message: 'Server-Sent Events are not supported in serverless environments',
+          alternative: 'Use polling via /api/endpoints/version endpoint',
+          polling_interval_ms: 10000,
+          serverless: true,
+          timestamp: new Date().toISOString()
+        });
+      });
+
+      app.all('/sse/role-updates', (req, res) => {
+        console.log('📡 SSE role-updates requested (serverless mode)');
+        res.status(200).json({
+          success: false,
+          sse_supported: false,
+          message: 'Server-Sent Events are not supported in serverless environments',
+          alternative: 'Role changes will be applied on next page refresh or login',
+          serverless: true,
+          timestamp: new Date().toISOString()
+        });
+      });
+    }
+
     // ==================== 404 HANDLER ====================
     app.use((req, res) => {
       res.status(404).json({
